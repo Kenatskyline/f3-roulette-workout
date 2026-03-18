@@ -1029,7 +1029,7 @@
 
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, wheelRadius - 8, start, end);
+      ctx.arc(0, 0, wheelRadius - 18, start, end);
       ctx.closePath();
       ctx.clip();
 
@@ -1039,8 +1039,18 @@
         ctx.rotate(Math.PI);
       }
 
-      const labelRadius = wheelRadius * 0.78;
+      const labelRadius = wheelRadius * 0.63;
       ctx.translate(labelRadius, 0);
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isLegendary ? '#f4c542' : '#ffffff';
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
 
       const words = text.split(' ');
       let lines = [];
@@ -1057,26 +1067,16 @@
         ];
       }
 
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = isLegendary ? '#f4c542' : '#ffffff';
-      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-      ctx.lineWidth = 3;
-      ctx.shadowColor = 'rgba(0,0,0,0.45)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
-
       if (lines.length === 1) {
-        ctx.font = 'bold 20px Arial';
+        ctx.font = 'bold 18px Arial';
         ctx.strokeText(lines[0], 0, 0);
         ctx.fillText(lines[0], 0, 0);
       } else {
-        ctx.font = 'bold 15px Arial';
-        ctx.strokeText(lines[0], 0, -10);
-        ctx.fillText(lines[0], 0, -10);
-        ctx.strokeText(lines[1], 0, 10);
-        ctx.fillText(lines[1], 0, 10);
+        ctx.font = 'bold 14px Arial';
+        ctx.strokeText(lines[0], 0, -9);
+        ctx.fillText(lines[0], 0, -9);
+        ctx.strokeText(lines[1], 0, 9);
+        ctx.fillText(lines[1], 0, 9);
       }
 
       ctx.restore();
