@@ -1,100 +1,1019 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>F3 Roulette Workout</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-
-<body style="background:black; color:white; font-family:sans-serif; text-align:center;">
-
-<h1>🎡 F3 Roulette Workout</h1>
-
-<button onclick="startGame()">Start Game</button>
-<br><br>
-
-<button onclick="placeBet(5)">5</button>
-<button onclick="placeBet(10)">10</button>
-<button onclick="placeBet(15)">15</button>
-<button onclick="placeBet(20)">20</button>
-<button onclick="placeBet(25)">25</button>
-<button onclick="placeAllIn()">ALL IN</button>
-
-<br><br>
-
-<button onclick="spinWheel()">SPIN</button>
-<button onclick="awardPoints(true)">SUCCESS</button>
-<button onclick="awardPoints(false)">FAIL</button>
-
-<h2 id="output">Waiting...</h2>
-
-<script>
-let players = [];
-let currentPlayerIndex = 0;
-let currentResult = null;
-
-const segments = [
-  { name: "Merkins", points: 1, weight: 14 },
-  { name: "Squats", points: 1, weight: 14 },
-  { name: "SSH", points: 1, weight: 14 },
-  { name: "Plank Jacks", points: 2, weight: 10 },
-  { name: "Lunges", points: 2, weight: 10 },
-  { name: "Pull Overs", points: 2, weight: 10 },
-  { name: "Bobby Hurley", points: 4, weight: 6 },
-  { name: "Skull Crushers", points: 4, weight: 6 },
-  { name: "Burpees", points: 6, weight: 3 },
-];
-
-function startGame(){
-  players = [
-    {name:"DuckHunt", points:0},
-    {name:"Slapshot", points:0},
-    {name:"Sparkler", points:0}
-  ];
-  update();
-}
-
-function placeBet(val){
-  document.getElementById("output").innerText =
-    players[currentPlayerIndex].name + " bets " + val;
-}
-
-function placeAllIn(){
-  document.getElementById("output").innerText =
-    players[currentPlayerIndex].name + " goes ALL IN!";
-}
-
-function spinWheel(){
-  let total = segments.reduce((a,b)=>a+b.weight,0);
-  let rand = Math.random()*total;
-
-  for(let s of segments){
-    rand -= s.weight;
-    if(rand<=0){
-      currentResult = s;
-      break;
+  <style>
+    :root{
+      --bg:#0b0d12;
+      --panel:#141923;
+      --panel2:#1a2230;
+      --line:#2a3344;
+      --text:#f5f7fb;
+      --muted:#aab4c6;
+      --gold:#f4c542;
+      --green:#28a745;
+      --blue:#2f80ed;
+      --yellow:#f2c94c;
+      --orange:#f2994a;
+      --red:#eb5757;
     }
-  }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:radial-gradient(circle at top, #1a1f2a 0%, #0b0d12 58%);
+    }
+    .app{
+      max-width:1500px;
+      margin:0 auto;
+      padding:18px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+      flex-wrap:wrap;
+    }
+    h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:.5px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:14px;
+      margin-top:4px;
+    }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:10px 14px;
+      background:#0f141d;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:340px 1fr 360px;
+      gap:14px;
+    }
+    .panel{
+      background:linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 12px 32px rgba(0,0,0,.28);
+    }
+    .panel h2{
+      margin:0 0 10px 0;
+      font-size:20px;
+    }
+    .stack{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    textarea{
+      width:100%;
+      min-height:120px;
+      resize:vertical;
+      background:#0f141d;
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      font-size:15px;
+    }
+    button{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      background:var(--gold);
+      color:#111;
+    }
+    button.secondary{
+      background:#253247;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+    button.success{
+      background:var(--green);
+      color:white;
+    }
+    button.danger{
+      background:var(--red);
+      color:white;
+    }
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#0f141d;
+      padding:12px;
+    }
+    .tiny{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .big{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.05;
+      margin-top:4px;
+    }
+    .wheelWrap{
+      display:grid;
+      grid-template-columns:1fr 320px;
+      gap:14px;
+      align-items:start;
+    }
+    canvas{
+      width:100%;
+      max-width:860px;
+      aspect-ratio:1/1;
+      display:block;
+      margin:0 auto;
+      border-radius:18px;
+      border:1px solid #3d2f1d;
+      background:radial-gradient(circle at center, #47331d 0%, #271b0f 50%, #121212 80%, #0c0c0c 100%);
+    }
+    .resultBox{
+      min-height:140px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:8px;
+      border:1px solid var(--line);
+      background:#0f141d;
+      border-radius:14px;
+      padding:14px;
+    }
+    .resultName{
+      font-size:32px;
+      font-weight:900;
+      line-height:1.02;
+    }
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .chips{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+    }
+    .chip{
+      border-radius:999px;
+      padding:16px 10px;
+      font-size:20px;
+      font-weight:900;
+      border:2px solid rgba(255,255,255,.15);
+      color:white;
+    }
+    .chip small{
+      display:block;
+      font-size:12px;
+      margin-top:2px;
+      opacity:.95;
+      font-weight:800;
+    }
+    .chip5{background:var(--green)}
+    .chip10{background:var(--blue)}
+    .chip15{background:var(--yellow); color:#111}
+    .chip20{background:var(--orange)}
+    .chip25{background:var(--red)}
+    .chipAllIn{background:#000; color:var(--gold); border-color:#5a4a18;}
+    .used{
+      opacity:.3;
+      filter:grayscale(1);
+      text-decoration:line-through;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+    }
+    th, td{
+      text-align:left;
+      padding:10px 8px;
+      border-bottom:1px solid var(--line);
+      font-size:14px;
+      vertical-align:top;
+    }
+    th{
+      color:var(--muted);
+      font-weight:800;
+    }
+    .badge{
+      display:inline-block;
+      min-width:58px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      color:#111;
+      text-align:center;
+    }
+    .common{background:#7cd67d}
+    .uncommon{background:#ffe08a}
+    .rare{background:#ff9f6e}
+    .legendary{background:#ff6b6b}
+    .history{
+      max-height:280px;
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#0f141d;
+      padding:8px;
+    }
+    .historyItem{
+      border-bottom:1px solid var(--line);
+      padding:8px 6px;
+      font-size:13px;
+      line-height:1.4;
+    }
+    .historyItem:last-child{border-bottom:none}
+    .foot{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+    @media (max-width:1200px){
+      .layout{grid-template-columns:1fr;}
+      .wheelWrap{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <h1>F3 Roulette Workout</h1>
+        <div class="sub">Enter pax names, place bets, spin the wheel, and track points live.</div>
+      </div>
+      <div id="phasePill" class="pill">Setup Mode</div>
+    </div>
 
-  document.getElementById("output").innerText =
-    "Landed on: " + currentResult.name;
-}
+    <div class="layout">
+      <div class="panel stack">
+        <h2>1) Players</h2>
+        <div class="tiny">Enter one pax name per line, or separate with commas.</div>
+        <textarea id="playerInput" placeholder="DuckHunt&#10;Slapshot&#10;Sparkler&#10;Bing Bong"></textarea>
+        <div class="row">
+          <button id="startBtn">Start Game</button>
+          <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+        <div class="foot">
+          Each player gets 5 turns total. Normal chip bets use one turn. All In uses all remaining turns.
+        </div>
 
-function awardPoints(success){
-  if(success){
-    players[currentPlayerIndex].points += currentResult.points;
-  }
+        <h2>2) Turn Info</h2>
+        <div class="card">
+          <div class="tiny">Dealer</div>
+          <div class="big" id="dealerName">—</div>
+        </div>
+        <div class="card">
+          <div class="tiny">Player</div>
+          <div class="big" id="playerName">—</div>
+        </div>
+        <div class="card">
+          <div class="tiny">Current Bet</div>
+          <div class="big" id="betDisplay">—</div>
+        </div>
 
-  currentPlayerIndex =
-    (currentPlayerIndex + 1) % players.length;
+        <h2>3) Place Bet</h2>
+        <div id="chipButtons" class="chips"></div>
+        <div class="foot">
+          All In = 50 reps and wipes remaining turns. It doubles points if completed.
+        </div>
+      </div>
 
-  update();
-}
+      <div class="panel">
+        <h2>Roulette Wheel</h2>
+        <div class="wheelWrap">
+          <div>
+            <canvas id="wheelCanvas" width="900" height="900"></canvas>
+          </div>
 
-function update(){
-  let text = players.map(p=>p.name + ": " + p.points).join(" | ");
-  document.getElementById("output").innerText = text;
-}
-</script>
+          <div class="stack">
+            <div class="resultBox">
+              <div class="tiny">Round Result</div>
+              <div class="resultName" id="resultName">Waiting to start…</div>
+              <div id="resultMeta" class="tiny">Enter players, start the game, place a bet, then spin.</div>
+            </div>
 
+            <div class="controls">
+              <button id="spinBtn" disabled>Spin Wheel</button>
+              <button id="awardBtn" class="success" disabled>Award Points</button>
+              <button id="failBtn" class="danger" disabled>No Points</button>
+              <button id="nextBtn" class="secondary" disabled>Next Turn</button>
+            </div>
+
+            <div class="card">
+              <div class="tiny">Point Values</div>
+              <div style="line-height:1.8; margin-top:6px;">
+                <span class="badge common">Common +1</span>
+                <span class="badge uncommon">Uncommon +2</span>
+                <span class="badge rare">Rare +4</span>
+                <span class="badge legendary">Legendary +6</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="tiny">Round History</div>
+              <div id="history" class="history"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel stack">
+        <h2>Leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Points</th>
+              <th>Turns Left</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+
+        <h2>Player Status</h2>
+        <div id="playerStatusList" class="stack"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MAX_TURNS = 5;
+    const ALL_IN_REPS = 50;
+    const NORMAL_CHIPS = [5, 10, 15, 20, 25];
+
+    const segments = [
+      { id:'merkins',       label:'Merkins',        rarity:'common',    points:1, weight:14, color:'#27ae60' },
+      { id:'squats',        label:'Squats',         rarity:'common',    points:1, weight:14, color:'#2ecc71' },
+      { id:'ssh',           label:'SSH',            rarity:'common',    points:1, weight:14, color:'#6fcf97' },
+
+      { id:'plankjacks',    label:'Plank Jacks',    rarity:'uncommon',  points:2, weight:10, color:'#f2c94c' },
+      { id:'lunges',        label:'Lunges',         rarity:'uncommon',  points:2, weight:10, color:'#f2994a' },
+      { id:'pullovers',     label:'Pull Overs',     rarity:'uncommon',  points:2, weight:10, color:'#f7b267' },
+
+      { id:'bobbyhurley',   label:'Bobby Hurley',   rarity:'rare',      points:4, weight:6,  color:'#eb5757' },
+      { id:'skullcrushers', label:'Skull Crushers', rarity:'rare',      points:4, weight:6,  color:'#c0392b' },
+
+      { id:'burpee',        label:'Burpee',         rarity:'legendary', points:6, weight:3,  color:'#101114' },
+    ];
+
+    const rarityNames = {
+      common: 'Common',
+      uncommon: 'Uncommon',
+      rare: 'Rare',
+      legendary: 'Legendary'
+    };
+
+    const state = {
+      players: [],
+      currentPlayerIndex: 0,
+      currentDealerIndex: 1,
+      currentBet: null,
+      isAllIn: false,
+      currentResult: null,
+      phase: 'setup',
+      history: [],
+      spinning: false,
+      wheelAngle: 0,
+      ballAnim: null,
+      landedSegmentIndex: null
+    };
+
+    const el = {
+      playerInput: document.getElementById('playerInput'),
+      startBtn: document.getElementById('startBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      dealerName: document.getElementById('dealerName'),
+      playerName: document.getElementById('playerName'),
+      betDisplay: document.getElementById('betDisplay'),
+      chipButtons: document.getElementById('chipButtons'),
+      spinBtn: document.getElementById('spinBtn'),
+      awardBtn: document.getElementById('awardBtn'),
+      failBtn: document.getElementById('failBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      resultName: document.getElementById('resultName'),
+      resultMeta: document.getElementById('resultMeta'),
+      leaderboardBody: document.getElementById('leaderboardBody'),
+      playerStatusList: document.getElementById('playerStatusList'),
+      history: document.getElementById('history'),
+      phasePill: document.getElementById('phasePill'),
+      canvas: document.getElementById('wheelCanvas'),
+    };
+
+    const ctx = el.canvas.getContext('2d');
+    const cx = el.canvas.width / 2;
+    const cy = el.canvas.height / 2;
+    const wheelRadius = 315;
+    const totalWeight = segments.reduce((sum, s) => sum + s.weight, 0);
+
+    function parsePlayers(text){
+      return text.split(/\n|,/).map(x => x.trim()).filter(Boolean);
+    }
+
+    function getCurrentPlayer(){
+      return state.players[state.currentPlayerIndex] || null;
+    }
+
+    function getCurrentDealer(){
+      return state.players[state.currentDealerIndex] || null;
+    }
+
+    function startGame(){
+      const names = parsePlayers(el.playerInput.value);
+      if(names.length < 2){
+        alert('Enter at least 2 players.');
+        return;
+      }
+
+      state.players = names.map(name => ({
+        name,
+        points: 0,
+        turnsTaken: 0,
+        turnsRemaining: MAX_TURNS,
+        allInUsed: false,
+        chipsAvailable: [...NORMAL_CHIPS]
+      }));
+
+      state.currentPlayerIndex = 0;
+      state.currentDealerIndex = 1 % state.players.length;
+      state.currentBet = null;
+      state.isAllIn = false;
+      state.currentResult = null;
+      state.phase = 'betting';
+      state.history = [];
+      state.spinning = false;
+      state.wheelAngle = 0;
+      state.ballAnim = null;
+      state.landedSegmentIndex = null;
+
+      pushHistory('Game started.');
+      updateUI();
+      drawWheel();
+    }
+
+    function resetGame(){
+      state.players = [];
+      state.currentPlayerIndex = 0;
+      state.currentDealerIndex = 1;
+      state.currentBet = null;
+      state.isAllIn = false;
+      state.currentResult = null;
+      state.phase = 'setup';
+      state.history = [];
+      state.spinning = false;
+      state.wheelAngle = 0;
+      state.ballAnim = null;
+      state.landedSegmentIndex = null;
+      updateUI();
+      drawWheel();
+    }
+
+    function pushHistory(text){
+      state.history.unshift(text);
+      if(state.history.length > 60) state.history.pop();
+    }
+
+    function placeBet(value){
+      const player = getCurrentPlayer();
+      if(!player || state.phase !== 'betting') return;
+      if(player.turnsRemaining <= 0) return;
+      if(!player.chipsAvailable.includes(value)) return;
+
+      state.currentBet = value;
+      state.isAllIn = false;
+
+      player.chipsAvailable = player.chipsAvailable.filter(v => v !== value);
+      player.turnsTaken += 1;
+      player.turnsRemaining = Math.max(0, MAX_TURNS - player.turnsTaken);
+
+      state.phase = 'readyToSpin';
+      state.currentResult = null;
+      state.landedSegmentIndex = null;
+      pushHistory(`${player.name} bet ${value} reps.`);
+      updateUI();
+    }
+
+    function placeAllIn(){
+      const player = getCurrentPlayer();
+      if(!player || state.phase !== 'betting') return;
+      if(player.turnsRemaining <= 0) return;
+      if(player.allInUsed) return;
+
+      state.currentBet = ALL_IN_REPS;
+      state.isAllIn = true;
+
+      player.allInUsed = true;
+      player.turnsTaken = MAX_TURNS;
+      player.turnsRemaining = 0;
+      player.chipsAvailable = [];
+
+      state.phase = 'readyToSpin';
+      state.currentResult = null;
+      state.landedSegmentIndex = null;
+      pushHistory(`${player.name} went ALL IN for ${ALL_IN_REPS} reps.`);
+      updateUI();
+    }
+
+    function weightedPick(){
+      let roll = Math.random() * totalWeight;
+      for(let i = 0; i < segments.length; i++){
+        roll -= segments[i].weight;
+        if(roll <= 0) return i;
+      }
+      return segments.length - 1;
+    }
+
+    function getSegmentBounds(index){
+      let start = -Math.PI / 2;
+      for(let i = 0; i < index; i++){
+        start += (segments[i].weight / totalWeight) * Math.PI * 2;
+      }
+      const span = (segments[index].weight / totalWeight) * Math.PI * 2;
+      return { start, end: start + span, span };
+    }
+
+    function normalizeAngle(a){
+      const twoPi = Math.PI * 2;
+      while(a < 0) a += twoPi;
+      while(a >= twoPi) a -= twoPi;
+      return a;
+    }
+
+    function spinWheel(){
+      if(state.phase !== 'readyToSpin' || state.spinning || state.currentBet == null) return;
+
+      const targetIndex = weightedPick();
+      state.landedSegmentIndex = targetIndex;
+      state.currentResult = segments[targetIndex];
+      state.spinning = true;
+      state.phase = 'spinning';
+
+      const target = getSegmentBounds(targetIndex);
+      const centerAngle = target.start + target.span / 2;
+      const pointerAngle = -Math.PI / 2;
+      const finalWheelAngle = normalizeAngle(pointerAngle - centerAngle);
+      const currentNormalized = normalizeAngle(state.wheelAngle);
+
+      let delta = finalWheelAngle - currentNormalized;
+      if(delta < 0) delta += Math.PI * 2;
+
+      const extraSpins = (Math.PI * 2) * (5 + Math.floor(Math.random() * 2));
+      const totalRotation = extraSpins + delta;
+      const startAngle = state.wheelAngle;
+      const duration = 5000;
+      const startTime = performance.now();
+
+      const ballStartAngle = Math.random() * Math.PI * 2;
+      const ballEndAngle = (target.start + target.span / 2) + totalRotation * -0.22 + (Math.random() * 0.18 - 0.09);
+
+      state.ballAnim = {
+        active: true,
+        startTime,
+        duration,
+        startAngle: ballStartAngle,
+        endAngle: ballEndAngle,
+      };
+
+      function animate(now){
+        let t = (now - startTime) / duration;
+        if(t > 1) t = 1;
+
+        const eased = 1 - Math.pow(1 - t, 3);
+        state.wheelAngle = startAngle + totalRotation * eased;
+
+        drawWheel();
+
+        if(t < 1){
+          requestAnimationFrame(animate);
+        } else {
+          state.wheelAngle = startAngle + totalRotation;
+          state.spinning = false;
+          state.phase = 'awaitingScore';
+          if(state.ballAnim) state.ballAnim.active = false;
+          drawWheel();
+          pushHistory(`${getCurrentDealer().name} spun ${state.currentResult.label} (${rarityNames[state.currentResult.rarity]}).`);
+          updateUI();
+        }
+      }
+
+      requestAnimationFrame(animate);
+      updateUI();
+    }
+
+    function awardPoints(success){
+      if(state.phase !== 'awaitingScore' || !state.currentResult) return;
+
+      const player = getCurrentPlayer();
+      let earned = 0;
+
+      if(success){
+        earned = state.currentResult.points;
+        if(state.isAllIn) earned *= 2;
+        player.points += earned;
+        pushHistory(`${player.name} completed ${state.currentBet} ${state.currentResult.label} for +${earned} point${earned === 1 ? '' : 's'}.`);
+      } else {
+        pushHistory(`${player.name} did not earn points on ${state.currentBet} ${state.currentResult.label}.`);
+      }
+
+      state.phase = 'roundComplete';
+      updateUI();
+    }
+
+    function findNextPlayerWithTurns(startIndex){
+      if(state.players.length === 0) return -1;
+      for(let i = 0; i < state.players.length; i++){
+        const idx = (startIndex + i) % state.players.length;
+        if(state.players[idx].turnsRemaining > 0) return idx;
+      }
+      return -1;
+    }
+
+    function nextTurn(){
+      if(state.phase !== 'roundComplete') return;
+
+      state.currentBet = null;
+      state.isAllIn = false;
+      state.currentResult = null;
+      state.landedSegmentIndex = null;
+
+      const nextIndex = findNextPlayerWithTurns(state.currentPlayerIndex + 1);
+      if(nextIndex === -1){
+        state.phase = 'finished';
+        pushHistory('All players are out of turns.');
+        updateUI();
+        return;
+      }
+
+      state.currentPlayerIndex = nextIndex;
+      state.currentDealerIndex = (nextIndex + 1) % state.players.length;
+      state.phase = 'betting';
+      updateUI();
+    }
+
+    function updateUI(){
+      const player = getCurrentPlayer();
+      const dealer = getCurrentDealer();
+
+      el.dealerName.textContent = dealer ? dealer.name : '—';
+      el.playerName.textContent = player ? player.name : '—';
+      el.betDisplay.textContent = state.currentBet == null ? '—' : (state.isAllIn ? `ALL IN (${state.currentBet})` : `${state.currentBet}`);
+
+      if(state.phase === 'setup'){
+        el.resultName.textContent = 'Waiting to start…';
+        el.resultMeta.textContent = 'Enter players, start the game, place a bet, then spin.';
+      } else if(state.phase === 'betting'){
+        el.resultName.textContent = 'Place Bet';
+        el.resultMeta.textContent = 'Current player selects a chip or goes All In.';
+      } else if(state.phase === 'readyToSpin'){
+        el.resultName.textContent = 'Ready to Spin';
+        el.resultMeta.textContent = `${dealer ? dealer.name : 'Dealer'} can spin the wheel.`;
+      } else if(state.phase === 'spinning'){
+        el.resultName.textContent = 'Spinning…';
+        el.resultMeta.textContent = 'Wheel in motion.';
+      } else if(state.phase === 'awaitingScore'){
+        el.resultName.textContent = state.currentResult.label;
+        el.resultMeta.textContent = `${rarityNames[state.currentResult.rarity]} • ${state.currentBet} reps • ${state.isAllIn ? 'All In doubles points' : '+' + state.currentResult.points + ' points'}`;
+      } else if(state.phase === 'roundComplete'){
+        el.resultName.textContent = 'Round Complete';
+        el.resultMeta.textContent = 'Awarded or failed. Advance to next turn.';
+      } else if(state.phase === 'finished'){
+        el.resultName.textContent = 'Turns Complete';
+        el.resultMeta.textContent = 'Everyone is out of turns.';
+      }
+
+      const phaseLabels = {
+        setup: 'Setup Mode',
+        betting: 'Betting',
+        readyToSpin: 'Ready To Spin',
+        spinning: 'Spinning',
+        awaitingScore: 'Score Round',
+        roundComplete: 'Next Turn Ready',
+        finished: 'Session Complete'
+      };
+      el.phasePill.textContent = phaseLabels[state.phase] || state.phase;
+
+      renderChipButtons();
+      renderLeaderboard();
+      renderPlayerStatus();
+      renderHistory();
+
+      el.spinBtn.disabled = !(state.phase === 'readyToSpin');
+      el.awardBtn.disabled = !(state.phase === 'awaitingScore');
+      el.failBtn.disabled = !(state.phase === 'awaitingScore');
+      el.nextBtn.disabled = !(state.phase === 'roundComplete');
+
+      drawWheel();
+    }
+
+    function renderChipButtons(){
+      el.chipButtons.innerHTML = '';
+      const player = getCurrentPlayer();
+
+      const chips = [
+        { value:5, className:'chip5' },
+        { value:10, className:'chip10' },
+        { value:15, className:'chip15' },
+        { value:20, className:'chip20' },
+        { value:25, className:'chip25' },
+      ];
+
+      chips.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = `chip ${ch.className}`;
+        const used = !player || !player.chipsAvailable.includes(ch.value) || state.phase !== 'betting';
+        if(used) btn.classList.add('used');
+        btn.disabled = used;
+        btn.innerHTML = `${ch.value}<small>reps</small>`;
+        btn.onclick = () => placeBet(ch.value);
+        el.chipButtons.appendChild(btn);
+      });
+
+      const allIn = document.createElement('button');
+      allIn.className = 'chip chipAllIn';
+      const allInUsed = !player || player.allInUsed || state.phase !== 'betting' || player.turnsRemaining <= 0;
+      if(allInUsed) allIn.classList.add('used');
+      allIn.disabled = allInUsed;
+      allIn.innerHTML = `ALL IN<small>${ALL_IN_REPS} reps</small>`;
+      allIn.onclick = placeAllIn;
+      el.chipButtons.appendChild(allIn);
+    }
+
+    function renderLeaderboard(){
+      const rows = [...state.players].sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
+      el.leaderboardBody.innerHTML = rows.map((p, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${p.name}</td>
+          <td>${p.points}</td>
+          <td>${p.turnsRemaining}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderPlayerStatus(){
+      el.playerStatusList.innerHTML = '';
+      state.players.forEach((p, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const chipText = p.chipsAvailable.length ? p.chipsAvailable.join(', ') : '—';
+        const marker =
+          idx === state.currentPlayerIndex ? ' • CURRENT PLAYER' :
+          idx === state.currentDealerIndex ? ' • DEALER' : '';
+        card.innerHTML = `
+          <div class="tiny">${p.name}${marker}</div>
+          <div style="margin-top:8px; line-height:1.7;">
+            <strong>Points:</strong> ${p.points}<br>
+            <strong>Turns Left:</strong> ${p.turnsRemaining}<br>
+            <strong>Chips Left:</strong> ${chipText}<br>
+            <strong>All In:</strong> ${p.allInUsed ? 'Used' : 'Available'}
+          </div>
+        `;
+        el.playerStatusList.appendChild(card);
+      });
+    }
+
+    function renderHistory(){
+      el.history.innerHTML = state.history.map(item => `<div class="historyItem">${item}</div>`).join('');
+    }
+
+    function drawWheel(){
+      ctx.clearRect(0, 0, el.canvas.width, el.canvas.height);
+      drawTable();
+      drawPointer();
+      drawWheelBody();
+      drawBall();
+      drawCenter();
+    }
+
+    function drawTable(){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, wheelRadius + 90, 0, Math.PI * 2);
+      ctx.fillStyle = '#2c2013';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, wheelRadius + 50, 0, Math.PI * 2);
+      ctx.fillStyle = '#6f4d1f';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, wheelRadius + 20, 0, Math.PI * 2);
+      ctx.fillStyle = '#2a1b0f';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawWheelBody(){
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(state.wheelAngle);
+
+      let start = -Math.PI / 2;
+      segments.forEach(seg => {
+        const span = (seg.weight / totalWeight) * Math.PI * 2;
+        const end = start + span;
+
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,wheelRadius,start,end);
+        ctx.closePath();
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#c9a564';
+        ctx.stroke();
+
+        const mid = start + span / 2;
+        const labelRadius = wheelRadius * 0.67;
+        ctx.save();
+        ctx.rotate(mid);
+        ctx.translate(labelRadius, 0);
+        ctx.rotate(Math.PI / 2);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = seg.rarity === 'legendary' ? '#f4c542' : '#111';
+        ctx.font = 'bold 26px Arial';
+        wrapText(ctx, seg.label.toUpperCase(), 0, -10, 150, 28);
+        ctx.restore();
+
+        start = end;
+      });
+
+      start = -Math.PI / 2;
+      segments.forEach(seg => {
+        const span = (seg.weight / totalWeight) * Math.PI * 2;
+        ctx.save();
+        ctx.rotate(start);
+        ctx.beginPath();
+        ctx.moveTo(wheelRadius * 0.15, 0);
+        ctx.lineTo(wheelRadius, 0);
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#d4c1a5';
+        ctx.stroke();
+        ctx.restore();
+        start += span;
+      });
+
+      if(state.landedSegmentIndex !== null && (state.phase === 'awaitingScore' || state.phase === 'roundComplete')){
+        const bounds = getSegmentBounds(state.landedSegmentIndex);
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,wheelRadius,bounds.start,bounds.end);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawPointer(){
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-Math.PI / 2);
+      ctx.beginPath();
+      ctx.moveTo(0, -(wheelRadius + 72));
+      ctx.lineTo(-26, -(wheelRadius + 22));
+      ctx.lineTo(26, -(wheelRadius + 22));
+      ctx.closePath();
+      ctx.fillStyle = '#f4c542';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#111';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBall(){
+      let angle = -Math.PI / 2;
+      let radius = wheelRadius + 34;
+      let bounce = 0;
+
+      if(state.ballAnim && state.ballAnim.active){
+        const now = performance.now();
+        let t = (now - state.ballAnim.startTime) / state.ballAnim.duration;
+        if(t > 1) t = 1;
+
+        const eased = 1 - Math.pow(1 - t, 2.2);
+        angle = state.ballAnim.startAngle + (state.ballAnim.endAngle - state.ballAnim.startAngle) * eased;
+
+        if(t < 0.55){
+          radius = wheelRadius + 40;
+        } else if(t < 0.82){
+          const innerT = (t - 0.55) / 0.27;
+          radius = (wheelRadius + 40) - innerT * 40;
+        } else {
+          const settleT = (t - 0.82) / 0.18;
+          radius = wheelRadius - 2 + Math.sin(settleT * Math.PI * 4) * (4 * (1 - settleT));
+        }
+
+        bounce = t < 0.55
+          ? Math.sin(t * 55) * 2
+          : t < 0.85
+            ? Math.sin(t * 90) * (10 * (1 - (t - 0.55) / 0.30))
+            : Math.sin(t * 120) * 2 * (1 - (t - 0.85) / 0.15);
+
+      } else if(state.landedSegmentIndex !== null){
+        const bounds = getSegmentBounds(state.landedSegmentIndex);
+        angle = bounds.start + bounds.span / 2 + state.wheelAngle;
+        radius = wheelRadius - 2;
+      }
+
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius + bounce;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(x, y + 10, 12, 6, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fill();
+
+      const grad = ctx.createRadialGradient(x - 5, y - 6, 2, x, y, 12);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(1, '#d9d9d9');
+
+      ctx.beginPath();
+      ctx.arc(x, y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#999';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawCenter(){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 70, 0, Math.PI * 2);
+      ctx.fillStyle = '#b58a43';
+      ctx.fill();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = '#e9c784';
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+      ctx.fillStyle = '#40280c';
+      ctx.fill();
+
+      ctx.fillStyle = '#f4c542';
+      ctx.font = 'bold 22px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('F3', cx, cy + 8);
+      ctx.restore();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+      const words = text.split(' ');
+      let line = '';
+      const lines = [];
+
+      for(let n = 0; n < words.length; n++){
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if(metrics.width > maxWidth && n > 0){
+          lines.push(line.trim());
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line.trim());
+
+      const startY = y - ((lines.length - 1) * lineHeight) / 2;
+      lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineHeight));
+    }
+
+    el.startBtn.onclick = startGame;
+    el.resetBtn.onclick = resetGame;
+    el.spinBtn.onclick = spinWheel;
+    el.awardBtn.onclick = () => awardPoints(true);
+    el.failBtn.onclick = () => awardPoints(false);
+    el.nextBtn.onclick = nextTurn;
+
+    updateUI();
+    drawWheel();
+  </script>
 </body>
 </html>
