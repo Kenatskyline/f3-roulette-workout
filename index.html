@@ -1,250 +1,100 @@
-// =========================
-// STATE
-// =========================
+<!DOCTYPE html>
+<html>
+<head>
+  <title>F3 Roulette Workout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="background:black; color:white; font-family:sans-serif; text-align:center;">
+
+<h1>🎡 F3 Roulette Workout</h1>
+
+<button onclick="startGame()">Start Game</button>
+<br><br>
+
+<button onclick="placeBet(5)">5</button>
+<button onclick="placeBet(10)">10</button>
+<button onclick="placeBet(15)">15</button>
+<button onclick="placeBet(20)">20</button>
+<button onclick="placeBet(25)">25</button>
+<button onclick="placeAllIn()">ALL IN</button>
+
+<br><br>
+
+<button onclick="spinWheel()">SPIN</button>
+<button onclick="awardPoints(true)">SUCCESS</button>
+<button onclick="awardPoints(false)">FAIL</button>
+
+<h2 id="output">Waiting...</h2>
+
+<script>
 let players = [];
 let currentPlayerIndex = 0;
-let currentDealerIndex = 1;
-
-let currentBet = null;
 let currentResult = null;
-let isAllInBet = false;
 
-// =========================
-// ROULETTE BOARD
-// =========================
 const segments = [
-  { name: "Merkins", rarity: "common", points: 1, weight: 14 },
-  { name: "Squats", rarity: "common", points: 1, weight: 14 },
-  { name: "SSH", rarity: "common", points: 1, weight: 14 },
-
-  { name: "Plank Jacks", rarity: "uncommon", points: 2, weight: 10 },
-  { name: "Lunges", rarity: "uncommon", points: 2, weight: 10 },
-  { name: "Pull Overs", rarity: "uncommon", points: 2, weight: 10 },
-
-  { name: "Bobby Hurley", rarity: "rare", points: 4, weight: 6 },
-  { name: "Skull Crushers", rarity: "rare", points: 4, weight: 6 },
-
-  { name: "Burpee", rarity: "legendary", points: 6, weight: 3 },
+  { name: "Merkins", points: 1, weight: 14 },
+  { name: "Squats", points: 1, weight: 14 },
+  { name: "SSH", points: 1, weight: 14 },
+  { name: "Plank Jacks", points: 2, weight: 10 },
+  { name: "Lunges", points: 2, weight: 10 },
+  { name: "Pull Overs", points: 2, weight: 10 },
+  { name: "Bobby Hurley", points: 4, weight: 6 },
+  { name: "Skull Crushers", points: 4, weight: 6 },
+  { name: "Burpees", points: 6, weight: 3 },
 ];
 
-// =========================
-// CONFIG
-// =========================
-const MAX_TURNS = 5;
-const CHIP_VALUES = [5, 10, 15, 20, 25];
-
-// Example all-in rep total.
-// Change this if you want all-in to mean something else.
-const ALL_IN_REPS = 50;
-
-// =========================
-// PLAYER SETUP
-// =========================
-function startGame(namesArray) {
-  players = namesArray.map(name => ({
-    name,
-    points: 0,
-    turnsTaken: 0,
-    turnsRemaining: MAX_TURNS,
-    allInUsed: false,
-    chips: [...CHIP_VALUES],
-  }));
-
-  currentPlayerIndex = 0;
-  currentDealerIndex = players.length > 1 ? 1 : 0;
-  currentBet = null;
-  currentResult = null;
-  isAllInBet = false;
-
-  updateDisplay();
+function startGame(){
+  players = [
+    {name:"DuckHunt", points:0},
+    {name:"Slapshot", points:0},
+    {name:"Sparkler", points:0}
+  ];
+  update();
 }
 
-// =========================
-// BETTING
-// =========================
-function placeBet(value) {
-  const player = players[currentPlayerIndex];
-  if (!player) return;
-
-  if (player.turnsRemaining <= 0) {
-    console.log(`${player.name} has no turns remaining.`);
-    return;
-  }
-
-  if (!player.chips.includes(value)) {
-    console.log(`${player.name} already used chip ${value}.`);
-    return;
-  }
-
-  currentBet = value;
-  isAllInBet = false;
-
-  // remove chip and consume one turn
-  player.chips = player.chips.filter(c => c !== value);
-  player.turnsTaken += 1;
-  player.turnsRemaining = Math.max(0, MAX_TURNS - player.turnsTaken);
-
-  console.log(`${player.name} bets ${value} reps.`);
-  updateDisplay();
+function placeBet(val){
+  document.getElementById("output").innerText =
+    players[currentPlayerIndex].name + " bets " + val;
 }
 
-function placeAllIn() {
-  const player = players[currentPlayerIndex];
-  if (!player) return;
-
-  if (player.turnsRemaining <= 0) {
-    console.log(`${player.name} has no turns remaining.`);
-    return;
-  }
-
-  if (player.allInUsed) {
-    console.log(`${player.name} already used ALL IN.`);
-    return;
-  }
-
-  currentBet = ALL_IN_REPS;
-  isAllInBet = true;
-
-  player.allInUsed = true;
-
-  // ALL IN wipes remaining turns immediately
-  player.turnsTaken = MAX_TURNS;
-  player.turnsRemaining = 0;
-
-  // optional: wipe out unused chips visually/logically
-  player.chips = [];
-
-  console.log(`${player.name} goes ALL IN for ${ALL_IN_REPS} reps.`);
-  updateDisplay();
+function placeAllIn(){
+  document.getElementById("output").innerText =
+    players[currentPlayerIndex].name + " goes ALL IN!";
 }
 
-// =========================
-// WEIGHTED ROULETTE SPIN
-// =========================
-function spinWheel() {
-  if (currentBet === null) {
-    console.log("No bet placed yet.");
-    return;
-  }
+function spinWheel(){
+  let total = segments.reduce((a,b)=>a+b.weight,0);
+  let rand = Math.random()*total;
 
-  const totalWeight = segments.reduce((sum, s) => sum + s.weight, 0);
-  let rand = Math.random() * totalWeight;
-
-  for (const s of segments) {
+  for(let s of segments){
     rand -= s.weight;
-    if (rand <= 0) {
+    if(rand<=0){
       currentResult = s;
       break;
     }
   }
 
-  console.log(`Spin result: ${currentResult.name} (${currentResult.rarity})`);
-  updateDisplay();
+  document.getElementById("output").innerText =
+    "Landed on: " + currentResult.name;
 }
 
-// =========================
-// SCORING
-// =========================
-function awardPoints(success) {
-  const player = players[currentPlayerIndex];
-  if (!player || !currentResult) return;
-
-  if (success) {
-    let pointsEarned = currentResult.points;
-
-    // Optional: reward ALL IN with bonus scoring
-    if (isAllInBet) {
-      pointsEarned *= 2;
-    }
-
-    player.points += pointsEarned;
-    console.log(`${player.name} earns ${pointsEarned} points.`);
-  } else {
-    console.log(`${player.name} failed. No points.`);
+function awardPoints(success){
+  if(success){
+    players[currentPlayerIndex].points += currentResult.points;
   }
 
-  nextTurn();
+  currentPlayerIndex =
+    (currentPlayerIndex + 1) % players.length;
+
+  update();
 }
 
-// =========================
-// TURN ROTATION
-// =========================
-function nextTurn() {
-  currentBet = null;
-  currentResult = null;
-  isAllInBet = false;
-
-  const nextIndex = getNextPlayerWithTurns(currentPlayerIndex + 1);
-
-  // No "game over" screen. Just stop rotating if nobody is left.
-  if (nextIndex === -1) {
-    console.log("All players have used their turns.");
-    updateDisplay();
-    return;
-  }
-
-  currentPlayerIndex = nextIndex;
-  currentDealerIndex = getNextDealer(currentPlayerIndex);
-
-  updateDisplay();
+function update(){
+  let text = players.map(p=>p.name + ": " + p.points).join(" | ");
+  document.getElementById("output").innerText = text;
 }
+</script>
 
-function getNextPlayerWithTurns(startIndex) {
-  if (players.length === 0) return -1;
-
-  for (let i = 0; i < players.length; i++) {
-    const idx = (startIndex + i) % players.length;
-    if (players[idx].turnsRemaining > 0) {
-      return idx;
-    }
-  }
-
-  return -1;
-}
-
-function getNextDealer(playerIndex) {
-  for (let i = 1; i < players.length; i++) {
-    const idx = (playerIndex + i) % players.length;
-    return idx;
-  }
-  return playerIndex;
-}
-
-// =========================
-// LEADERBOARD / DISPLAY
-// =========================
-function updateDisplay() {
-  const player = players[currentPlayerIndex];
-  const dealer = players[currentDealerIndex];
-
-  console.clear();
-  console.log("🎡 F3 ROULETTE WORKOUT");
-  console.log("----------------------------");
-  console.log("Dealer:", dealer ? dealer.name : "-");
-  console.log("Player:", player ? player.name : "-");
-  console.log("Bet:", currentBet !== null ? currentBet : "-");
-  console.log("All In:", isAllInBet ? "YES" : "NO");
-  console.log("Result:", currentResult ? currentResult.name : "-");
-
-  console.log("\n🏆 Leaderboard");
-  [...players]
-    .sort((a, b) => b.points - a.points)
-    .forEach((p, index) => {
-      console.log(
-        `${index + 1}. ${p.name} | ${p.points} pts | Turns Left: ${p.turnsRemaining} | Chips: ${p.chips.join(", ") || "-"} | All In: ${p.allInUsed ? "Used" : "Available"}`
-      );
-    });
-}
-
-// =========================
-// EXAMPLE
-// =========================
-// startGame(["DuckHunt", "Slapshot", "Sparkler", "Bing Bong"]);
-// placeBet(15);
-// spinWheel();
-// awardPoints(true);
-
-// Example ALL IN:
-// placeAllIn();
-// spinWheel();
-// awardPoints(true);
+</body>
+</html>
