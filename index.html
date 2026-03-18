@@ -425,7 +425,7 @@
         </div>
 
         <div class="foot">
-          The wheel uses equal wedges for looks, but the result is still weighted behind the scenes.
+          Slice order is shuffled on load to break up colors. Ball landing and awarded result are locked together.
         </div>
       </div>
 
@@ -460,17 +460,24 @@
       legendary: 6
     };
 
-    const slotDefs = [
+    const rarityNames = {
+      common: 'Common',
+      uncommon: 'Uncommon',
+      rare: 'Rare',
+      legendary: 'Legendary'
+    };
+
+    const baseSlots = [
       { id:'merkins1', label:'MERKINS', rarity:'common', movement:'Merkins', color:'#2ecc71', weight:10 },
-      { id:'squats1', label:'SQUATS', rarity:'common', movement:'Squats', color:'#2ecc71', weight:10 },
-      { id:'ssh1', label:'SSH', rarity:'common', movement:'SSH', color:'#2ecc71', weight:10 },
+      { id:'squats1', label:'SQUATS', rarity:'common', movement:'Squats', color:'#27ae60', weight:10 },
+      { id:'ssh1', label:'SSH', rarity:'common', movement:'SSH', color:'#22c55e', weight:10 },
 
-      { id:'merkins2', label:'MERKINS', rarity:'common', movement:'Merkins', color:'#27ae60', weight:10 },
+      { id:'merkins2', label:'MERKINS', rarity:'common', movement:'Merkins', color:'#2ecc71', weight:10 },
       { id:'squats2', label:'SQUATS', rarity:'common', movement:'Squats', color:'#27ae60', weight:10 },
-      { id:'ssh2', label:'SSH', rarity:'common', movement:'SSH', color:'#27ae60', weight:10 },
+      { id:'ssh2', label:'SSH', rarity:'common', movement:'SSH', color:'#22c55e', weight:10 },
 
-      { id:'merkins3', label:'MERKINS', rarity:'common', movement:'Merkins', color:'#22c55e', weight:10 },
-      { id:'squats3', label:'SQUATS', rarity:'common', movement:'Squats', color:'#22c55e', weight:10 },
+      { id:'merkins3', label:'MERKINS', rarity:'common', movement:'Merkins', color:'#2ecc71', weight:10 },
+      { id:'squats3', label:'SQUATS', rarity:'common', movement:'Squats', color:'#27ae60', weight:10 },
       { id:'ssh3', label:'SSH', rarity:'common', movement:'SSH', color:'#22c55e', weight:10 },
 
       { id:'plankjacks1', label:'PLANK JACKS', rarity:'uncommon', movement:'Plank Jacks', color:'#f2c94c', weight:7 },
@@ -484,12 +491,16 @@
       { id:'burpee1', label:'BURPEES', rarity:'legendary', movement:'Burpee', color:'#111318', weight:2 }
     ];
 
-    const rarityNames = {
-      common: 'Common',
-      uncommon: 'Uncommon',
-      rare: 'Rare',
-      legendary: 'Legendary'
-    };
+    function shuffledCopy(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    const slotDefs = shuffledCopy(baseSlots);
 
     const state = {
       players: [],
@@ -700,13 +711,10 @@
         (state.landedBallAngle ?? (Math.random() * Math.PI * 2))
         - (Math.PI * 2 * (3 + Math.random() * 2));
 
-      const chaosFactor = 0.3 + Math.random() * 0.4;
+      const finalWorldAngle = targetCenter + (startAngle + totalRotation);
+      const settleNoise = (Math.random() * 0.18 - 0.09);
 
-      const ballEndAngle =
-        currentBallAngle +
-        (Math.PI * 2 * (4 + Math.random() * 2)) +
-        (targetCenter - currentBallAngle) +
-        (Math.random() * chaosFactor - chaosFactor / 2);
+      const ballEndAngle = finalWorldAngle + settleNoise;
 
       const startLogoRotation = state.ballLogoRotation;
       const extraLogoSpins = (Math.PI * 2) * (7 + Math.random() * 6) * (Math.random() > 0.5 ? 1 : -1);
@@ -905,7 +913,6 @@
 
     function renderLeaderboard() {
       const rows = [...state.players].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
-
       el.leaderboardBody.innerHTML = rows.map((p, i) => `
         <tr>
           <td>${i + 1}</td>
@@ -920,7 +927,6 @@
       el.playerStatusList.innerHTML = state.players.map((p, idx) => {
         const chipText = p.chipsAvailable.length ? p.chipsAvailable.join(', ') : '—';
         const marker = idx === state.currentPlayerIndex ? ' • CURRENT PLAYER' : '';
-
         return `
           <div class="statusItem">
             <div class="tiny">${p.name}${marker}</div>
@@ -1014,7 +1020,6 @@
       if (state.landedSlotIndex !== null && (state.phase === 'awaitingScore' || state.phase === 'roundComplete')) {
         const start = -Math.PI / 2 + state.landedSlotIndex * slotSpan;
         const end = start + slotSpan;
-
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.arc(0, 0, wheelRadius, start, end);
@@ -1029,7 +1034,6 @@
     function drawWedgeLabel(text, mid, isLegendary) {
       ctx.save();
 
-      // spray-painted on the slice: no flipping logic
       ctx.rotate(mid);
       ctx.translate(wheelRadius * 0.60, 0);
 
