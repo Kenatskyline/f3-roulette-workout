@@ -973,17 +973,15 @@
 
         const mid = start + slotSpan / 2;
 
-        // consistent strip direction for every wedge
+        // Keep orientation you liked, but move labels farther out and enlarge them
         ctx.save();
         ctx.rotate(mid);
 
-        // flip bottom-half labels so they all read consistently
         if (Math.cos(mid) < 0) {
           ctx.rotate(Math.PI);
         }
 
-        ctx.translate(wheelRadius * 0.63, 0);
-
+        ctx.translate(wheelRadius * 0.74, 0);
         drawTextStrip(seg.label, seg.rarity === 'legendary');
         ctx.restore();
       }
@@ -1016,14 +1014,14 @@
     }
 
     function drawTextStrip(text, isLegendary){
-      const w = 110;
-      const h = 16;
+      const w = 138;
+      const h = 22;
 
       ctx.save();
 
-      ctx.fillStyle = isLegendary ? 'rgba(0,0,0,0.88)' : 'rgba(255,255,255,0.72)';
-      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(0,0,0,0.14)';
-      ctx.lineWidth = 1;
+      ctx.fillStyle = isLegendary ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.78)';
+      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(0,0,0,0.16)';
+      ctx.lineWidth = 1.2;
 
       ctx.beginPath();
       ctx.rect(-w / 2, -h / 2, w, h);
@@ -1031,7 +1029,7 @@
       ctx.stroke();
 
       ctx.fillStyle = isLegendary ? '#f4c542' : '#111';
-      ctx.font = 'bold 10px Arial';
+      ctx.font = 'bold 13px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, 0, 0);
