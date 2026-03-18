@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F3 Roulette Workout V2</title>
+  <title>F3 Roulette Workout V3</title>
   <style>
     :root{
       --bg:#090b10;
@@ -29,8 +29,7 @@
       height:100%;
       overflow:hidden;
       font-family:Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top, #1a1f2a 0%, #0b0d12 58%);
+      background:radial-gradient(circle at top, #1a1f2a 0%, #0b0d12 58%);
       color:var(--text);
     }
 
@@ -351,8 +350,8 @@
   <div class="app">
     <div class="topbar">
       <div>
-        <h1>F3 Roulette Workout V2</h1>
-        <div class="sub">Equal slices. Hidden weighted RNG. No dealer rotation. Q runs the spin every time.</div>
+        <h1>F3 Roulette Workout</h1>
+        <div class="sub">Equal slices • hidden weighted RNG • points = rarity multiplier × reps bet</div>
       </div>
       <div id="phasePill" class="pill">Setup Mode</div>
     </div>
@@ -428,7 +427,7 @@
         </div>
 
         <div class="foot">
-          Equal-size slices are visual only. Weighted RNG happens before the spin, then the animation lands on the chosen slice.
+          The wheel uses equal wedges for looks, but the result is still weighted behind the scenes.
         </div>
       </div>
 
@@ -974,17 +973,18 @@
         ctx.strokeStyle = '#d4b06a';
         ctx.stroke();
 
-        // Pennant-style label
         const mid = start + slotSpan / 2;
+
+        // place text strip inside wedge like your green lines
         ctx.save();
         ctx.rotate(mid);
         ctx.translate(wheelRadius * 0.63, 0);
-        ctx.rotate(Math.PI / 2 - 0.28);
-        drawPennantLabel(seg.label, seg.rarity === 'legendary');
+        ctx.rotate(-(mid)); // keep strip horizontal on screen
+
+        drawTextStrip(seg.label, seg.rarity === 'legendary');
         ctx.restore();
       }
 
-      // gold separators
       for(let i = 0; i < slotDefs.length; i++){
         const a = -Math.PI / 2 + i * slotSpan;
         ctx.save();
@@ -1012,31 +1012,26 @@
       ctx.restore();
     }
 
-    function drawPennantLabel(text, isLegendary){
-      const w = 150;
-      const h = 32;
+    function drawTextStrip(text, isLegendary){
+      const w = 120;
+      const h = 18;
 
       ctx.save();
 
-      ctx.beginPath();
-      ctx.moveTo(-w/2, -h/2);
-      ctx.lineTo(w/2 - 18, -h/2);
-      ctx.lineTo(w/2, 0);
-      ctx.lineTo(w/2 - 18, h/2);
-      ctx.lineTo(-w/2, h/2);
-      ctx.closePath();
-      ctx.fillStyle = isLegendary ? '#1a1a1d' : 'rgba(255,255,255,0.18)';
-      ctx.fill();
+      ctx.fillStyle = isLegendary ? 'rgba(0,0,0,0.82)' : 'rgba(255,255,255,0.65)';
+      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 1.2;
 
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.rect(-w/2, -h/2, w, h);
+      ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = isLegendary ? '#f4c542' : '#111';
-      ctx.font = 'bold 15px Arial';
+      ctx.font = 'bold 11px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(text, -6, 0);
+      ctx.fillText(text, 0, 0);
 
       ctx.restore();
     }
@@ -1090,9 +1085,10 @@
             ? Math.sin(t * 95) * (11 * (1 - (t - 0.55) / 0.31))
             : Math.sin(t * 120) * 1.8 * (1 - (t - 0.86) / 0.14);
 
-        const rT = 1 - Math.pow(1 - t, 2.3);
-        logoRotation = state.ballAnim.startLogoRotation +
-          (state.ballAnim.endLogoRotation - state.ballAnim.startLogoRotation) * rT;
+        const logoEased = 1 - Math.pow(1 - t, 2.4);
+        logoRotation =
+          state.ballAnim.startLogoRotation +
+          (state.ballAnim.endLogoRotation - state.ballAnim.startLogoRotation) * logoEased;
       }
 
       const x = cx + Math.cos(angle) * radius;
@@ -1118,7 +1114,6 @@
       ctx.strokeStyle = '#999';
       ctx.stroke();
 
-      // Rolling F3 mark
       ctx.translate(x, y);
       ctx.rotate(logoRotation);
       ctx.fillStyle = '#1c1c1f';
