@@ -18,37 +18,53 @@
       --yellow:#f2c94c;
       --orange:#f2994a;
       --red:#eb5757;
+      --dark:#101114;
     }
+
     *{box-sizing:border-box}
-    body{
+
+    html, body{
       margin:0;
+      height:100%;
+      overflow:hidden;
       font-family:Arial, Helvetica, sans-serif;
-      color:var(--text);
       background:radial-gradient(circle at top, #1a1f2a 0%, #0b0d12 58%);
+      color:var(--text);
     }
+
+    body{
+      padding:14px;
+    }
+
     .app{
-      max-width:1500px;
+      height:calc(100vh - 28px);
+      display:grid;
+      grid-template-rows:auto 1fr;
+      gap:12px;
+      max-width:1600px;
       margin:0 auto;
-      padding:18px;
     }
+
     .topbar{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:12px;
-      margin-bottom:16px;
       flex-wrap:wrap;
     }
+
     h1{
       margin:0;
-      font-size:34px;
+      font-size:32px;
       letter-spacing:.5px;
     }
+
     .sub{
       color:var(--muted);
       font-size:14px;
       margin-top:4px;
     }
+
     .pill{
       border:1px solid var(--line);
       border-radius:999px;
@@ -57,29 +73,49 @@
       color:var(--muted);
       font-size:13px;
       font-weight:700;
+      white-space:nowrap;
     }
+
     .layout{
+      min-height:0;
       display:grid;
-      grid-template-columns:340px 1fr 360px;
-      gap:14px;
+      grid-template-columns:320px 1fr 340px;
+      gap:12px;
     }
+
     .panel{
+      min-height:0;
       background:linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
       border:1px solid var(--line);
       border-radius:18px;
-      padding:16px;
+      padding:14px;
       box-shadow:0 12px 32px rgba(0,0,0,.28);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      overflow:hidden;
     }
+
     .panel h2{
-      margin:0 0 10px 0;
-      font-size:20px;
+      margin:0;
+      font-size:18px;
     }
-    .stack{display:flex;flex-direction:column;gap:12px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    .tiny{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .foot{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+
     textarea{
       width:100%;
-      min-height:120px;
-      resize:vertical;
+      min-height:96px;
+      resize:none;
       background:#0f141d;
       color:var(--text);
       border:1px solid var(--line);
@@ -87,135 +123,202 @@
       padding:12px;
       font-size:15px;
     }
+
     button{
       border:none;
       border-radius:12px;
-      padding:12px 16px;
+      padding:11px 14px;
       font-size:15px;
       font-weight:800;
       cursor:pointer;
       background:var(--gold);
       color:#111;
     }
+
     button.secondary{
       background:#253247;
       color:var(--text);
       border:1px solid var(--line);
     }
+
     button.success{
       background:var(--green);
-      color:white;
+      color:#fff;
     }
+
     button.danger{
       background:var(--red);
-      color:white;
+      color:#fff;
     }
+
     button:disabled{
       opacity:.45;
       cursor:not-allowed;
     }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
     .card{
       border:1px solid var(--line);
       border-radius:14px;
       background:#0f141d;
       padding:12px;
     }
-    .tiny{
-      font-size:12px;
-      color:var(--muted);
-    }
+
     .big{
       font-size:28px;
       font-weight:900;
       line-height:1.05;
       margin-top:4px;
     }
-    .wheelWrap{
-      display:grid;
-      grid-template-columns:1fr 320px;
-      gap:14px;
-      align-items:start;
-    }
-    canvas{
-      width:100%;
-      max-width:860px;
-      aspect-ratio:1/1;
-      display:block;
-      margin:0 auto;
-      border-radius:18px;
-      border:1px solid #3d2f1d;
-      background:radial-gradient(circle at center, #47331d 0%, #271b0f 50%, #121212 80%, #0c0c0c 100%);
-    }
-    .resultBox{
-      min-height:140px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:8px;
-      border:1px solid var(--line);
-      background:#0f141d;
-      border-radius:14px;
-      padding:14px;
-    }
-    .resultName{
-      font-size:32px;
-      font-weight:900;
-      line-height:1.02;
-    }
-    .controls{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
+
     .chips{
       display:grid;
       grid-template-columns:repeat(3, 1fr);
       gap:10px;
     }
+
     .chip{
       border-radius:999px;
-      padding:16px 10px;
-      font-size:20px;
+      padding:14px 8px;
+      font-size:18px;
       font-weight:900;
       border:2px solid rgba(255,255,255,.15);
       color:white;
+      min-height:72px;
     }
+
     .chip small{
       display:block;
-      font-size:12px;
+      font-size:11px;
       margin-top:2px;
       opacity:.95;
       font-weight:800;
     }
+
     .chip5{background:var(--green)}
     .chip10{background:var(--blue)}
     .chip15{background:var(--yellow); color:#111}
     .chip20{background:var(--orange)}
     .chip25{background:var(--red)}
     .chipAllIn{background:#000; color:var(--gold); border-color:#5a4a18;}
+
     .used{
       opacity:.3;
       filter:grayscale(1);
       text-decoration:line-through;
     }
+
+    .centerPanel{
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      gap:12px;
+    }
+
+    .resultBox{
+      border:1px solid var(--line);
+      background:#0f141d;
+      border-radius:14px;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .resultName{
+      font-size:34px;
+      font-weight:900;
+      line-height:1.02;
+    }
+
+    .wheelWrap{
+      min-height:0;
+      display:grid;
+      grid-template-columns:1fr 260px;
+      gap:12px;
+    }
+
+    .wheelArea{
+      min-height:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid #3d2f1d;
+      border-radius:18px;
+      background:radial-gradient(circle at center, #47331d 0%, #271b0f 50%, #121212 80%, #0c0c0c 100%);
+      overflow:hidden;
+    }
+
+    canvas{
+      width:min(100%, 780px);
+      height:auto;
+      aspect-ratio:1/1;
+      display:block;
+    }
+
+    .sideStack{
+      min-height:0;
+      display:grid;
+      grid-template-rows:auto auto 1fr;
+      gap:12px;
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .controls button:last-child{
+      grid-column:1 / -1;
+    }
+
     table{
       width:100%;
       border-collapse:collapse;
     }
+
     th, td{
       text-align:left;
-      padding:10px 8px;
+      padding:9px 6px;
       border-bottom:1px solid var(--line);
       font-size:14px;
       vertical-align:top;
     }
+
     th{
       color:var(--muted);
       font-weight:800;
     }
+
+    .listScroll{
+      min-height:0;
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#0f141d;
+      padding:8px;
+    }
+
+    .historyItem, .statusItem{
+      border-bottom:1px solid var(--line);
+      padding:8px 6px;
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .historyItem:last-child, .statusItem:last-child{
+      border-bottom:none;
+    }
+
     .badge{
       display:inline-block;
-      min-width:58px;
+      min-width:62px;
       padding:4px 8px;
       border-radius:999px;
       font-size:12px;
@@ -223,33 +326,28 @@
       color:#111;
       text-align:center;
     }
+
     .common{background:#7cd67d}
     .uncommon{background:#ffe08a}
     .rare{background:#ff9f6e}
     .legendary{background:#ff6b6b}
-    .history{
-      max-height:280px;
-      overflow:auto;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:#0f141d;
-      padding:8px;
-    }
-    .historyItem{
-      border-bottom:1px solid var(--line);
-      padding:8px 6px;
-      font-size:13px;
-      line-height:1.4;
-    }
-    .historyItem:last-child{border-bottom:none}
-    .foot{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.45;
-    }
-    @media (max-width:1200px){
-      .layout{grid-template-columns:1fr;}
-      .wheelWrap{grid-template-columns:1fr;}
+
+    @media (max-width: 1180px){
+      html, body{
+        overflow:auto;
+      }
+      .app{
+        height:auto;
+      }
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .wheelWrap{
+        grid-template-columns:1fr;
+      }
+      .sideStack{
+        grid-template-rows:auto auto auto;
+      }
     }
   </style>
 </head>
@@ -258,57 +356,68 @@
     <div class="topbar">
       <div>
         <h1>F3 Roulette Workout</h1>
-        <div class="sub">Enter pax names, place bets, spin the wheel, and track points live.</div>
+        <div class="sub">Rarity multiplier × reps bet = points earned</div>
       </div>
       <div id="phasePill" class="pill">Setup Mode</div>
     </div>
 
     <div class="layout">
-      <div class="panel stack">
-        <h2>1) Players</h2>
+      <div class="panel">
+        <h2>Players</h2>
         <div class="tiny">Enter one pax name per line, or separate with commas.</div>
         <textarea id="playerInput" placeholder="DuckHunt&#10;Slapshot&#10;Sparkler&#10;Bing Bong"></textarea>
+
         <div class="row">
           <button id="startBtn">Start Game</button>
           <button id="resetBtn" class="secondary">Reset</button>
         </div>
+
         <div class="foot">
-          Each player gets 5 turns total. Normal chip bets use one turn. All In uses all remaining turns.
+          Each player gets 5 turns. Normal bets use one turn. All In uses only that player’s remaining turns.
         </div>
 
-        <h2>2) Turn Info</h2>
+        <h2>Turn Info</h2>
+
         <div class="card">
           <div class="tiny">Dealer</div>
           <div class="big" id="dealerName">—</div>
         </div>
+
         <div class="card">
           <div class="tiny">Player</div>
           <div class="big" id="playerName">—</div>
         </div>
+
         <div class="card">
           <div class="tiny">Current Bet</div>
           <div class="big" id="betDisplay">—</div>
         </div>
 
-        <h2>3) Place Bet</h2>
+        <h2>Bet Chips</h2>
         <div id="chipButtons" class="chips"></div>
-        <div class="foot">
-          All In = 50 reps and wipes remaining turns. It doubles points if completed.
-        </div>
       </div>
 
-      <div class="panel">
-        <h2>Roulette Wheel</h2>
+      <div class="panel centerPanel">
+        <div class="resultBox">
+          <div class="tiny">Round Result</div>
+          <div class="resultName" id="resultName">Waiting to start…</div>
+          <div id="resultMeta" class="tiny">Enter players, start the game, place a bet, then spin.</div>
+        </div>
+
         <div class="wheelWrap">
-          <div>
+          <div class="wheelArea">
             <canvas id="wheelCanvas" width="900" height="900"></canvas>
           </div>
 
-          <div class="stack">
-            <div class="resultBox">
-              <div class="tiny">Round Result</div>
-              <div class="resultName" id="resultName">Waiting to start…</div>
-              <div id="resultMeta" class="tiny">Enter players, start the game, place a bet, then spin.</div>
+          <div class="sideStack">
+            <div class="card">
+              <div class="tiny">Multipliers</div>
+              <div style="line-height:1.9; margin-top:6px;">
+                <span class="badge common">Common ×1</span><br>
+                <span class="badge uncommon">Uncommon ×2</span><br>
+                <span class="badge rare">Rare ×4</span><br>
+                <span class="badge legendary">Legendary ×6</span>
+              </div>
             </div>
 
             <div class="controls">
@@ -318,25 +427,16 @@
               <button id="nextBtn" class="secondary" disabled>Next Turn</button>
             </div>
 
-            <div class="card">
-              <div class="tiny">Point Values</div>
-              <div style="line-height:1.8; margin-top:6px;">
-                <span class="badge common">Common +1</span>
-                <span class="badge uncommon">Uncommon +2</span>
-                <span class="badge rare">Rare +4</span>
-                <span class="badge legendary">Legendary +6</span>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="tiny">Round History</div>
-              <div id="history" class="history"></div>
-            </div>
+            <div class="listScroll" id="history"></div>
           </div>
+        </div>
+
+        <div class="foot">
+          All In uses the sum of that player’s remaining chips and doubles nothing by default. It simply multiplies by rarity like every other bet.
         </div>
       </div>
 
-      <div class="panel stack">
+      <div class="panel">
         <h2>Leaderboard</h2>
         <table>
           <thead>
@@ -351,29 +451,35 @@
         </table>
 
         <h2>Player Status</h2>
-        <div id="playerStatusList" class="stack"></div>
+        <div class="listScroll" id="playerStatusList"></div>
       </div>
     </div>
   </div>
 
   <script>
     const MAX_TURNS = 5;
-    const ALL_IN_REPS = 50;
     const NORMAL_CHIPS = [5, 10, 15, 20, 25];
 
+    const RARITY_MULTIPLIERS = {
+      common: 1,
+      uncommon: 2,
+      rare: 4,
+      legendary: 6
+    };
+
     const segments = [
-      { id:'merkins',       label:'Merkins',        rarity:'common',    points:1, weight:14, color:'#27ae60' },
-      { id:'squats',        label:'Squats',         rarity:'common',    points:1, weight:14, color:'#2ecc71' },
-      { id:'ssh',           label:'SSH',            rarity:'common',    points:1, weight:14, color:'#6fcf97' },
+      { id:'merkins',       label:'Merkins',        rarity:'common',    weight:14, color:'#27ae60' },
+      { id:'squats',        label:'Squats',         rarity:'common',    weight:14, color:'#2ecc71' },
+      { id:'ssh',           label:'SSH',            rarity:'common',    weight:14, color:'#6fcf97' },
 
-      { id:'plankjacks',    label:'Plank Jacks',    rarity:'uncommon',  points:2, weight:10, color:'#f2c94c' },
-      { id:'lunges',        label:'Lunges',         rarity:'uncommon',  points:2, weight:10, color:'#f2994a' },
-      { id:'pullovers',     label:'Pull Overs',     rarity:'uncommon',  points:2, weight:10, color:'#f7b267' },
+      { id:'plankjacks',    label:'Plank Jacks',    rarity:'uncommon',  weight:10, color:'#f2c94c' },
+      { id:'lunges',        label:'Lunges',         rarity:'uncommon',  weight:10, color:'#f2994a' },
+      { id:'pullovers',     label:'Pull Overs',     rarity:'uncommon',  weight:10, color:'#f7b267' },
 
-      { id:'bobbyhurley',   label:'Bobby Hurley',   rarity:'rare',      points:4, weight:6,  color:'#eb5757' },
-      { id:'skullcrushers', label:'Skull Crushers', rarity:'rare',      points:4, weight:6,  color:'#c0392b' },
+      { id:'bobbyhurley',   label:'Bobby Hurley',   rarity:'rare',      weight:6,  color:'#eb5757' },
+      { id:'skullcrushers', label:'Skull Crushers', rarity:'rare',      weight:6,  color:'#c0392b' },
 
-      { id:'burpee',        label:'Burpee',         rarity:'legendary', points:6, weight:3,  color:'#101114' },
+      { id:'burpee',        label:'Burpee',         rarity:'legendary', weight:3,  color:'#101114' },
     ];
 
     const rarityNames = {
@@ -437,6 +543,11 @@
       return state.players[state.currentDealerIndex] || null;
     }
 
+    function pushHistory(text){
+      state.history.unshift(text);
+      if(state.history.length > 80) state.history.pop();
+    }
+
     function startGame(){
       const names = parsePlayers(el.playerInput.value);
       if(names.length < 2){
@@ -487,11 +598,6 @@
       drawWheel();
     }
 
-    function pushHistory(text){
-      state.history.unshift(text);
-      if(state.history.length > 60) state.history.pop();
-    }
-
     function placeBet(value){
       const player = getCurrentPlayer();
       if(!player || state.phase !== 'betting') return;
@@ -508,6 +614,7 @@
       state.phase = 'readyToSpin';
       state.currentResult = null;
       state.landedSegmentIndex = null;
+
       pushHistory(`${player.name} bet ${value} reps.`);
       updateUI();
     }
@@ -518,18 +625,22 @@
       if(player.turnsRemaining <= 0) return;
       if(player.allInUsed) return;
 
-      state.currentBet = ALL_IN_REPS;
+      const remainingBet = player.chipsAvailable.reduce((sum, v) => sum + v, 0);
+      if(remainingBet <= 0) return;
+
+      state.currentBet = remainingBet;
       state.isAllIn = true;
 
       player.allInUsed = true;
+      player.chipsAvailable = [];
       player.turnsTaken = MAX_TURNS;
       player.turnsRemaining = 0;
-      player.chipsAvailable = [];
 
       state.phase = 'readyToSpin';
       state.currentResult = null;
       state.landedSegmentIndex = null;
-      pushHistory(`${player.name} went ALL IN for ${ALL_IN_REPS} reps.`);
+
+      pushHistory(`${player.name} went ALL IN for ${remainingBet} reps.`);
       updateUI();
     }
 
@@ -599,7 +710,6 @@
 
         const eased = 1 - Math.pow(1 - t, 3);
         state.wheelAngle = startAngle + totalRotation * eased;
-
         drawWheel();
 
         if(t < 1){
@@ -623,13 +733,12 @@
       if(state.phase !== 'awaitingScore' || !state.currentResult) return;
 
       const player = getCurrentPlayer();
-      let earned = 0;
+      const multiplier = RARITY_MULTIPLIERS[state.currentResult.rarity];
+      const earned = state.currentBet * multiplier;
 
       if(success){
-        earned = state.currentResult.points;
-        if(state.isAllIn) earned *= 2;
         player.points += earned;
-        pushHistory(`${player.name} completed ${state.currentBet} ${state.currentResult.label} for +${earned} point${earned === 1 ? '' : 's'}.`);
+        pushHistory(`${player.name} completed ${state.currentBet} ${state.currentResult.label} for +${earned} points.`);
       } else {
         pushHistory(`${player.name} did not earn points on ${state.currentBet} ${state.currentResult.label}.`);
       }
@@ -690,8 +799,9 @@
         el.resultName.textContent = 'Spinning…';
         el.resultMeta.textContent = 'Wheel in motion.';
       } else if(state.phase === 'awaitingScore'){
+        const mult = RARITY_MULTIPLIERS[state.currentResult.rarity];
         el.resultName.textContent = state.currentResult.label;
-        el.resultMeta.textContent = `${rarityNames[state.currentResult.rarity]} • ${state.currentBet} reps • ${state.isAllIn ? 'All In doubles points' : '+' + state.currentResult.points + ' points'}`;
+        el.resultMeta.textContent = `${rarityNames[state.currentResult.rarity]} ×${mult} • ${state.currentBet} reps • ${state.currentBet * mult} possible points`;
       } else if(state.phase === 'roundComplete'){
         el.resultName.textContent = 'Round Complete';
         el.resultMeta.textContent = 'Awarded or failed. Advance to next turn.';
@@ -752,7 +862,9 @@
       const allInUsed = !player || player.allInUsed || state.phase !== 'betting' || player.turnsRemaining <= 0;
       if(allInUsed) allIn.classList.add('used');
       allIn.disabled = allInUsed;
-      allIn.innerHTML = `ALL IN<small>${ALL_IN_REPS} reps</small>`;
+
+      const remainingTotal = player ? player.chipsAvailable.reduce((sum, v) => sum + v, 0) : 0;
+      allIn.innerHTML = `ALL IN<small>${remainingTotal} reps</small>`;
       allIn.onclick = placeAllIn;
       el.chipButtons.appendChild(allIn);
     }
@@ -770,25 +882,24 @@
     }
 
     function renderPlayerStatus(){
-      el.playerStatusList.innerHTML = '';
-      state.players.forEach((p, idx) => {
-        const card = document.createElement('div');
-        card.className = 'card';
+      el.playerStatusList.innerHTML = state.players.map((p, idx) => {
         const chipText = p.chipsAvailable.length ? p.chipsAvailable.join(', ') : '—';
         const marker =
           idx === state.currentPlayerIndex ? ' • CURRENT PLAYER' :
           idx === state.currentDealerIndex ? ' • DEALER' : '';
-        card.innerHTML = `
-          <div class="tiny">${p.name}${marker}</div>
-          <div style="margin-top:8px; line-height:1.7;">
-            <strong>Points:</strong> ${p.points}<br>
-            <strong>Turns Left:</strong> ${p.turnsRemaining}<br>
-            <strong>Chips Left:</strong> ${chipText}<br>
-            <strong>All In:</strong> ${p.allInUsed ? 'Used' : 'Available'}
+
+        return `
+          <div class="statusItem">
+            <div class="tiny">${p.name}${marker}</div>
+            <div style="margin-top:6px; line-height:1.6;">
+              <strong>Points:</strong> ${p.points}<br>
+              <strong>Turns Left:</strong> ${p.turnsRemaining}<br>
+              <strong>Chips Left:</strong> ${chipText}<br>
+              <strong>All In:</strong> ${p.allInUsed ? 'Used' : 'Available'}
+            </div>
           </div>
         `;
-        el.playerStatusList.appendChild(card);
-      });
+      }).join('');
     }
 
     function renderHistory(){
@@ -891,6 +1002,7 @@
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(-Math.PI / 2);
+
       ctx.beginPath();
       ctx.moveTo(0, -(wheelRadius + 72));
       ctx.lineTo(-26, -(wheelRadius + 22));
@@ -901,6 +1013,7 @@
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#111';
       ctx.stroke();
+
       ctx.restore();
     }
 
@@ -943,6 +1056,7 @@
       const y = cy + Math.sin(angle) * radius + bounce;
 
       ctx.save();
+
       ctx.beginPath();
       ctx.ellipse(x, y + 10, 12, 6, 0, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -959,6 +1073,7 @@
       ctx.lineWidth = 1.5;
       ctx.strokeStyle = '#999';
       ctx.stroke();
+
       ctx.restore();
     }
 
