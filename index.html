@@ -34,7 +34,7 @@
     body{ padding:12px; }
 
     .app{
-      max-width:1600px;
+      max-width:1700px;
       height:calc(100vh - 24px);
       margin:0 auto;
       display:grid;
@@ -225,14 +225,14 @@
       border:1px solid var(--line);
       background:#0f141d;
       border-radius:14px;
-      padding:14px;
+      padding:12px 14px;
       display:flex;
       flex-direction:column;
-      gap:8px;
+      gap:6px;
     }
 
     .resultName{
-      font-size:34px;
+      font-size:28px;
       font-weight:900;
       line-height:1.02;
     }
@@ -258,7 +258,7 @@
     }
 
     canvas{
-      width:min(100%, 820px);
+      width:min(100%, 920px);
       height:auto;
       aspect-ratio:1/1;
       display:block;
@@ -399,7 +399,7 @@
 
         <div class="wheelWrap">
           <div class="wheelArea">
-            <canvas id="wheelCanvas" width="900" height="900"></canvas>
+            <canvas id="wheelCanvas" width="1000" height="1000"></canvas>
           </div>
 
           <div class="sideStack">
@@ -530,7 +530,7 @@
     const ctx = el.canvas.getContext('2d');
     const cx = el.canvas.width / 2;
     const cy = el.canvas.height / 2;
-    const wheelRadius = 320;
+    const wheelRadius = 370;
     const slotCount = slotDefs.length;
     const slotSpan = (Math.PI * 2) / slotCount;
 
@@ -949,21 +949,21 @@
       ctx.save();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, wheelRadius + 96, 0, Math.PI * 2);
+      ctx.arc(cx, cy, wheelRadius + 110, 0, Math.PI * 2);
       ctx.fillStyle = '#2c2013';
       ctx.fill();
 
-      const ringGrad = ctx.createRadialGradient(cx, cy, wheelRadius - 10, cx, cy, wheelRadius + 60);
+      const ringGrad = ctx.createRadialGradient(cx, cy, wheelRadius - 10, cx, cy, wheelRadius + 70);
       ringGrad.addColorStop(0, '#5e4219');
       ringGrad.addColorStop(1, '#1d140c');
 
       ctx.beginPath();
-      ctx.arc(cx, cy, wheelRadius + 54, 0, Math.PI * 2);
+      ctx.arc(cx, cy, wheelRadius + 62, 0, Math.PI * 2);
       ctx.fillStyle = ringGrad;
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, wheelRadius + 16, 0, Math.PI * 2);
+      ctx.arc(cx, cy, wheelRadius + 18, 0, Math.PI * 2);
       ctx.fillStyle = '#20150d';
       ctx.fill();
 
@@ -988,7 +988,7 @@
         ctx.fillStyle = seg.color;
         ctx.fill();
 
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.strokeStyle = '#d4b06a';
         ctx.stroke();
 
@@ -1001,9 +1001,9 @@
         ctx.save();
         ctx.rotate(a);
         ctx.beginPath();
-        ctx.moveTo(wheelRadius * 0.18, 0);
+        ctx.moveTo(wheelRadius * 0.16, 0);
         ctx.lineTo(wheelRadius, 0);
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 7;
         ctx.strokeStyle = '#e0c48d';
         ctx.stroke();
         ctx.restore();
@@ -1029,7 +1029,7 @@
 
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, wheelRadius - 18, start, end);
+      ctx.arc(0, 0, wheelRadius - 24, start, end);
       ctx.closePath();
       ctx.clip();
 
@@ -1039,13 +1039,13 @@
         ctx.rotate(Math.PI);
       }
 
-      const labelRadius = wheelRadius * 0.63;
+      const labelRadius = wheelRadius * 0.68;
       ctx.translate(labelRadius, 0);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = isLegendary ? '#f4c542' : '#ffffff';
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
       ctx.lineWidth = 3;
       ctx.shadowColor = 'rgba(0,0,0,0.45)';
       ctx.shadowBlur = 4;
@@ -1068,15 +1068,15 @@
       }
 
       if (lines.length === 1) {
-        ctx.font = 'bold 18px Arial';
+        ctx.font = 'bold 20px Arial';
         ctx.strokeText(lines[0], 0, 0);
         ctx.fillText(lines[0], 0, 0);
       } else {
-        ctx.font = 'bold 14px Arial';
-        ctx.strokeText(lines[0], 0, -9);
-        ctx.fillText(lines[0], 0, -9);
-        ctx.strokeText(lines[1], 0, 9);
-        ctx.fillText(lines[1], 0, 9);
+        ctx.font = 'bold 15px Arial';
+        ctx.strokeText(lines[0], 0, -10);
+        ctx.fillText(lines[0], 0, -10);
+        ctx.strokeText(lines[1], 0, 10);
+        ctx.fillText(lines[1], 0, 10);
       }
 
       ctx.restore();
@@ -1088,9 +1088,9 @@
       ctx.rotate(-Math.PI / 2);
 
       ctx.beginPath();
-      ctx.moveTo(0, -(wheelRadius + 78));
-      ctx.lineTo(-28, -(wheelRadius + 24));
-      ctx.lineTo(28, -(wheelRadius + 24));
+      ctx.moveTo(0, -(wheelRadius + 92));
+      ctx.lineTo(-30, -(wheelRadius + 28));
+      ctx.lineTo(30, -(wheelRadius + 28));
       ctx.closePath();
       ctx.fillStyle = '#f4c542';
       ctx.fill();
@@ -1103,7 +1103,7 @@
 
     function drawBall() {
       let angle = state.landedBallAngle ?? (-Math.PI / 2);
-      let radius = wheelRadius + 34;
+      let radius = wheelRadius + 40;
       let bounce = 0;
       let logoRotation = state.ballLogoRotation;
 
@@ -1116,13 +1116,13 @@
         angle = state.ballAnim.startAngle + (state.ballAnim.endAngle - state.ballAnim.startAngle) * eased;
 
         if (t < 0.52) {
-          radius = wheelRadius + 44;
+          radius = wheelRadius + 50;
         } else if (t < 0.82) {
           const innerT = (t - 0.52) / 0.30;
-          radius = (wheelRadius + 44) - innerT * 46;
+          radius = (wheelRadius + 50) - innerT * 50;
         } else {
           const settleT = (t - 0.82) / 0.18;
-          radius = wheelRadius - 4 + Math.sin(settleT * Math.PI * 4) * (5 * (1 - settleT));
+          radius = wheelRadius - 4 + Math.sin(settleT * Math.PI * 4) * (6 * (1 - settleT));
         }
 
         bounce = t < 0.55
@@ -1139,12 +1139,12 @@
 
       const x = cx + Math.cos(angle) * radius;
       const y = cy + Math.sin(angle) * radius + bounce;
-      const ballR = 14;
+      const ballR = 15;
 
       ctx.save();
 
       ctx.beginPath();
-      ctx.ellipse(x, y + 12, 16, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(x, y + 13, 17, 7, 0, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0,0,0,0.38)';
       ctx.fill();
 
@@ -1175,7 +1175,7 @@
       ctx.save();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 76, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 82, 0, Math.PI * 2);
       ctx.fillStyle = '#b58a43';
       ctx.fill();
       ctx.lineWidth = 6;
@@ -1183,18 +1183,18 @@
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 54, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 58, 0, Math.PI * 2);
       ctx.fillStyle = '#2d1d09';
       ctx.fill();
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(cx, cy, 46, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 48, 0, Math.PI * 2);
       ctx.closePath();
       ctx.clip();
 
       if (f3Logo.complete && f3Logo.naturalWidth > 0) {
-        const size = 92;
+        const size = 96;
         ctx.drawImage(f3Logo, cx - size / 2, cy - size / 2, size, size);
       } else {
         ctx.fillStyle = '#f4c542';
