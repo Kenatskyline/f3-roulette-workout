@@ -524,7 +524,7 @@
       playerStatusList: document.getElementById('playerStatusList'),
       history: document.getElementById('history'),
       phasePill: document.getElementById('phasePill'),
-      canvas: document.getElementById('wheelCanvas'),
+      canvas: document.getElementById('wheelCanvas')
     };
 
     const ctx = el.canvas.getContext('2d');
@@ -539,22 +539,23 @@
     f3Logo.onerror = () => {};
     f3Logo.onload = () => drawWheel();
 
-    function parsePlayers(text){
+    function parsePlayers(text) {
       return text.split(/\n|,/).map(x => x.trim()).filter(Boolean);
     }
 
-    function getCurrentPlayer(){
+    function getCurrentPlayer() {
       return state.players[state.currentPlayerIndex] || null;
     }
 
-    function pushHistory(text){
+    function pushHistory(text) {
       state.history.unshift(text);
-      if(state.history.length > 80) state.history.pop();
+      if (state.history.length > 80) state.history.pop();
     }
 
-    function startGame(){
+    function startGame() {
       const names = parsePlayers(el.playerInput.value);
-      if(names.length < 1){
+
+      if (names.length < 1) {
         alert('Enter at least 1 player.');
         return;
       }
@@ -586,7 +587,7 @@
       drawWheel();
     }
 
-    function resetGame(){
+    function resetGame() {
       state.players = [];
       state.currentPlayerIndex = 0;
       state.currentBet = null;
@@ -600,15 +601,16 @@
       state.landedSlotIndex = null;
       state.landedBallAngle = null;
       state.ballLogoRotation = Math.random() * Math.PI * 2;
+
       updateUI();
       drawWheel();
     }
 
-    function placeBet(value){
+    function placeBet(value) {
       const player = getCurrentPlayer();
-      if(!player || state.phase !== 'betting') return;
-      if(player.turnsRemaining <= 0) return;
-      if(!player.chipsAvailable.includes(value)) return;
+      if (!player || state.phase !== 'betting') return;
+      if (player.turnsRemaining <= 0) return;
+      if (!player.chipsAvailable.includes(value)) return;
 
       state.currentBet = value;
       state.isAllIn = false;
@@ -624,14 +626,14 @@
       updateUI();
     }
 
-    function placeAllIn(){
+    function placeAllIn() {
       const player = getCurrentPlayer();
-      if(!player || state.phase !== 'betting') return;
-      if(player.turnsRemaining <= 0) return;
-      if(player.allInUsed) return;
+      if (!player || state.phase !== 'betting') return;
+      if (player.turnsRemaining <= 0) return;
+      if (player.allInUsed) return;
 
       const remainingBet = player.chipsAvailable.reduce((sum, v) => sum + v, 0);
-      if(remainingBet <= 0) return;
+      if (remainingBet <= 0) return;
 
       state.currentBet = remainingBet;
       state.isAllIn = true;
@@ -648,29 +650,31 @@
       updateUI();
     }
 
-    function weightedPickSlotIndex(){
+    function weightedPickSlotIndex() {
       const totalWeight = slotDefs.reduce((sum, s) => sum + s.weight, 0);
       let roll = Math.random() * totalWeight;
-      for(let i = 0; i < slotDefs.length; i++){
+
+      for (let i = 0; i < slotDefs.length; i++) {
         roll -= slotDefs[i].weight;
-        if(roll <= 0) return i;
+        if (roll <= 0) return i;
       }
+
       return slotDefs.length - 1;
     }
 
-    function normalizeAngle(a){
+    function normalizeAngle(a) {
       const twoPi = Math.PI * 2;
-      while(a < 0) a += twoPi;
-      while(a >= twoPi) a -= twoPi;
+      while (a < 0) a += twoPi;
+      while (a >= twoPi) a -= twoPi;
       return a;
     }
 
-    function slotCenterAngle(index){
+    function slotCenterAngle(index) {
       return -Math.PI / 2 + index * slotSpan + slotSpan / 2;
     }
 
-    function spinWheel(){
-      if(state.phase !== 'readyToSpin' || state.spinning || state.currentBet == null) return;
+    function spinWheel() {
+      if (state.phase !== 'readyToSpin' || state.spinning || state.currentBet == null) return;
 
       const targetIndex = weightedPickSlotIndex();
       const result = slotDefs[targetIndex];
@@ -686,7 +690,7 @@
       const currentNormalized = normalizeAngle(state.wheelAngle);
 
       let delta = finalWheelAngle - currentNormalized;
-      if(delta < 0) delta += Math.PI * 2;
+      if (delta < 0) delta += Math.PI * 2;
 
       const extraSpins = (Math.PI * 2) * (5 + Math.floor(Math.random() * 2));
       const totalRotation = extraSpins + delta;
@@ -711,9 +715,9 @@
         endLogoRotation
       };
 
-      function animate(now){
+      function animate(now) {
         let t = (now - startTime) / duration;
-        if(t > 1) t = 1;
+        if (t > 1) t = 1;
 
         const eased = 1 - Math.pow(1 - t, 3);
         state.wheelAngle = startAngle + totalRotation * eased;
@@ -725,7 +729,7 @@
 
         drawWheel();
 
-        if(t < 1){
+        if (t < 1) {
           requestAnimationFrame(animate);
         } else {
           state.wheelAngle = startAngle + totalRotation;
@@ -744,14 +748,14 @@
       updateUI();
     }
 
-    function awardPoints(success){
-      if(state.phase !== 'awaitingScore' || !state.currentResult) return;
+    function awardPoints(success) {
+      if (state.phase !== 'awaitingScore' || !state.currentResult) return;
 
       const player = getCurrentPlayer();
       const multiplier = MULTIPLIERS[state.currentResult.rarity];
       const earned = state.currentBet * multiplier;
 
-      if(success){
+      if (success) {
         player.points += earned;
         pushHistory(`${player.name} completed ${state.currentBet} ${state.currentResult.movement} for +${earned} points.`);
       } else {
@@ -762,24 +766,27 @@
       updateUI();
     }
 
-    function findNextPlayerWithTurns(startIndex){
-      if(state.players.length === 0) return -1;
-      for(let i = 0; i < state.players.length; i++){
+    function findNextPlayerWithTurns(startIndex) {
+      if (state.players.length === 0) return -1;
+
+      for (let i = 0; i < state.players.length; i++) {
         const idx = (startIndex + i) % state.players.length;
-        if(state.players[idx].turnsRemaining > 0) return idx;
+        if (state.players[idx].turnsRemaining > 0) return idx;
       }
+
       return -1;
     }
 
-    function nextTurn(){
-      if(state.phase !== 'roundComplete') return;
+    function nextTurn() {
+      if (state.phase !== 'roundComplete') return;
 
       state.currentBet = null;
       state.isAllIn = false;
       state.currentResult = null;
 
       const nextIndex = findNextPlayerWithTurns(state.currentPlayerIndex + 1);
-      if(nextIndex === -1){
+
+      if (nextIndex === -1) {
         state.phase = 'finished';
         pushHistory('All players are out of turns.');
         updateUI();
@@ -791,35 +798,36 @@
       updateUI();
     }
 
-    function updateUI(){
+    function updateUI() {
       const player = getCurrentPlayer();
 
       el.playerName.textContent = player ? player.name : '—';
       el.betDisplay.textContent =
-        state.currentBet == null ? '—' :
-        (state.isAllIn ? `ALL IN (${state.currentBet})` : `${state.currentBet}`);
+        state.currentBet == null
+          ? '—'
+          : (state.isAllIn ? `ALL IN (${state.currentBet})` : `${state.currentBet}`);
 
-      if(state.phase === 'setup'){
+      if (state.phase === 'setup') {
         el.resultName.textContent = 'Waiting to start…';
         el.resultMeta.textContent = 'Enter players, start the game, place a bet, then spin.';
-      } else if(state.phase === 'betting'){
+      } else if (state.phase === 'betting') {
         el.resultName.textContent = 'Place Bet';
         el.resultMeta.textContent = 'Current player selects a chip or goes All In.';
-      } else if(state.phase === 'readyToSpin'){
+      } else if (state.phase === 'readyToSpin') {
         el.resultName.textContent = 'Ready to Spin';
         el.resultMeta.textContent = 'Hit spin when ready.';
-      } else if(state.phase === 'spinning'){
+      } else if (state.phase === 'spinning') {
         el.resultName.textContent = 'Spinning…';
         el.resultMeta.textContent = 'Wheel in motion.';
-      } else if(state.phase === 'awaitingScore'){
+      } else if (state.phase === 'awaitingScore') {
         const mult = MULTIPLIERS[state.currentResult.rarity];
         el.resultName.textContent = state.currentResult.movement;
         el.resultMeta.textContent =
           `${rarityNames[state.currentResult.rarity]} ×${mult} • ${state.currentBet} reps • ${state.currentBet * mult} possible points`;
-      } else if(state.phase === 'roundComplete'){
+      } else if (state.phase === 'roundComplete') {
         el.resultName.textContent = 'Round Complete';
         el.resultMeta.textContent = 'Awarded or failed. Advance to next turn.';
-      } else if(state.phase === 'finished'){
+      } else if (state.phase === 'finished') {
         el.resultName.textContent = 'Turns Complete';
         el.resultMeta.textContent = 'Everyone is out of turns.';
       }
@@ -833,6 +841,7 @@
         roundComplete: 'Next Turn Ready',
         finished: 'Session Complete'
       };
+
       el.phasePill.textContent = phaseLabels[state.phase] || state.phase;
 
       renderChipButtons();
@@ -848,23 +857,25 @@
       drawWheel();
     }
 
-    function renderChipButtons(){
+    function renderChipButtons() {
       el.chipButtons.innerHTML = '';
       const player = getCurrentPlayer();
 
       const chips = [
-        { value:5, className:'chip5' },
-        { value:10, className:'chip10' },
-        { value:15, className:'chip15' },
-        { value:20, className:'chip20' },
-        { value:25, className:'chip25' },
+        { value: 5, className: 'chip5' },
+        { value: 10, className: 'chip10' },
+        { value: 15, className: 'chip15' },
+        { value: 20, className: 'chip20' },
+        { value: 25, className: 'chip25' }
       ];
 
       chips.forEach(ch => {
         const btn = document.createElement('button');
         btn.className = `chip ${ch.className}`;
+
         const used = !player || !player.chipsAvailable.includes(ch.value) || state.phase !== 'betting';
-        if(used) btn.classList.add('used');
+        if (used) btn.classList.add('used');
+
         btn.disabled = used;
         btn.innerHTML = `${ch.value}<small>reps</small>`;
         btn.onclick = () => placeBet(ch.value);
@@ -873,8 +884,14 @@
 
       const allIn = document.createElement('button');
       allIn.className = 'chip chipAllIn';
-      const allInUsed = !player || player.allInUsed || state.phase !== 'betting' || player.turnsRemaining <= 0;
-      if(allInUsed) allIn.classList.add('used');
+
+      const allInUsed =
+        !player ||
+        player.allInUsed ||
+        state.phase !== 'betting' ||
+        player.turnsRemaining <= 0;
+
+      if (allInUsed) allIn.classList.add('used');
       allIn.disabled = allInUsed;
 
       const remainingTotal = player ? player.chipsAvailable.reduce((sum, v) => sum + v, 0) : 0;
@@ -883,8 +900,9 @@
       el.chipButtons.appendChild(allIn);
     }
 
-    function renderLeaderboard(){
-      const rows = [...state.players].sort((a,b) => b.points - a.points || a.name.localeCompare(b.name));
+    function renderLeaderboard() {
+      const rows = [...state.players].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
       el.leaderboardBody.innerHTML = rows.map((p, i) => `
         <tr>
           <td>${i + 1}</td>
@@ -895,10 +913,11 @@
       `).join('');
     }
 
-    function renderPlayerStatus(){
+    function renderPlayerStatus() {
       el.playerStatusList.innerHTML = state.players.map((p, idx) => {
         const chipText = p.chipsAvailable.length ? p.chipsAvailable.join(', ') : '—';
         const marker = idx === state.currentPlayerIndex ? ' • CURRENT PLAYER' : '';
+
         return `
           <div class="statusItem">
             <div class="tiny">${p.name}${marker}</div>
@@ -913,11 +932,11 @@
       }).join('');
     }
 
-    function renderHistory(){
+    function renderHistory() {
       el.history.innerHTML = state.history.map(item => `<div class="historyItem">${item}</div>`).join('');
     }
 
-    function drawWheel(){
+    function drawWheel() {
       ctx.clearRect(0, 0, el.canvas.width, el.canvas.height);
       drawTable();
       drawPointer();
@@ -926,7 +945,7 @@
       drawCenterHub();
     }
 
-    function drawTable(){
+    function drawTable() {
       ctx.save();
 
       ctx.beginPath();
@@ -937,6 +956,7 @@
       const ringGrad = ctx.createRadialGradient(cx, cy, wheelRadius - 10, cx, cy, wheelRadius + 60);
       ringGrad.addColorStop(0, '#5e4219');
       ringGrad.addColorStop(1, '#1d140c');
+
       ctx.beginPath();
       ctx.arc(cx, cy, wheelRadius + 54, 0, Math.PI * 2);
       ctx.fillStyle = ringGrad;
@@ -950,15 +970,16 @@
       ctx.restore();
     }
 
-    function drawWheelBody(){
+    function drawWheelBody() {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(state.wheelAngle);
 
-      for(let i = 0; i < slotDefs.length; i++){
+      for (let i = 0; i < slotDefs.length; i++) {
         const seg = slotDefs[i];
         const start = -Math.PI / 2 + i * slotSpan;
         const end = start + slotSpan;
+        const mid = start + slotSpan / 2;
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -971,23 +992,12 @@
         ctx.strokeStyle = '#d4b06a';
         ctx.stroke();
 
-        const mid = start + slotSpan / 2;
-
-        // Keep orientation you liked, but move labels farther out and enlarge them
-        ctx.save();
-        ctx.rotate(mid);
-
-        if (Math.cos(mid) < 0) {
-          ctx.rotate(Math.PI);
-        }
-
-        ctx.translate(wheelRadius * 0.74, 0);
-        drawTextStrip(seg.label, seg.rarity === 'legendary');
-        ctx.restore();
+        drawWedgeLabel(seg.label, start, end, mid, seg.rarity === 'legendary');
       }
 
-      for(let i = 0; i < slotDefs.length; i++){
+      for (let i = 0; i < slotDefs.length; i++) {
         const a = -Math.PI / 2 + i * slotSpan;
+
         ctx.save();
         ctx.rotate(a);
         ctx.beginPath();
@@ -999,12 +1009,13 @@
         ctx.restore();
       }
 
-      if(state.landedSlotIndex !== null && (state.phase === 'awaitingScore' || state.phase === 'roundComplete')){
+      if (state.landedSlotIndex !== null && (state.phase === 'awaitingScore' || state.phase === 'roundComplete')) {
         const start = -Math.PI / 2 + state.landedSlotIndex * slotSpan;
         const end = start + slotSpan;
+
         ctx.beginPath();
-        ctx.moveTo(0,0);
-        ctx.arc(0,0,wheelRadius,start,end);
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, wheelRadius, start, end);
         ctx.closePath();
         ctx.fillStyle = 'rgba(255,255,255,0.14)';
         ctx.fill();
@@ -1013,31 +1024,65 @@
       ctx.restore();
     }
 
-    function drawTextStrip(text, isLegendary){
-      const w = 138;
-      const h = 22;
-
+    function drawWedgeLabel(text, start, end, mid, isLegendary) {
       ctx.save();
 
-      ctx.fillStyle = isLegendary ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.78)';
-      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(0,0,0,0.16)';
-      ctx.lineWidth = 1.2;
-
       ctx.beginPath();
-      ctx.rect(-w / 2, -h / 2, w, h);
-      ctx.fill();
-      ctx.stroke();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, wheelRadius - 8, start, end);
+      ctx.closePath();
+      ctx.clip();
 
-      ctx.fillStyle = isLegendary ? '#f4c542' : '#111';
-      ctx.font = 'bold 13px Arial';
+      ctx.rotate(mid);
+
+      if (Math.cos(mid) < 0) {
+        ctx.rotate(Math.PI);
+      }
+
+      const labelRadius = wheelRadius * 0.78;
+      ctx.translate(labelRadius, 0);
+
+      const words = text.split(' ');
+      let lines = [];
+
+      if (words.length === 1) {
+        lines = [text];
+      } else if (words.length === 2) {
+        lines = [words[0], words[1]];
+      } else {
+        const splitAt = Math.ceil(words.length / 2);
+        lines = [
+          words.slice(0, splitAt).join(' '),
+          words.slice(splitAt).join(' ')
+        ];
+      }
+
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(text, 0, 0);
+      ctx.fillStyle = isLegendary ? '#f4c542' : '#ffffff';
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+
+      if (lines.length === 1) {
+        ctx.font = 'bold 20px Arial';
+        ctx.strokeText(lines[0], 0, 0);
+        ctx.fillText(lines[0], 0, 0);
+      } else {
+        ctx.font = 'bold 15px Arial';
+        ctx.strokeText(lines[0], 0, -10);
+        ctx.fillText(lines[0], 0, -10);
+        ctx.strokeText(lines[1], 0, 10);
+        ctx.fillText(lines[1], 0, 10);
+      }
 
       ctx.restore();
     }
 
-    function drawPointer(){
+    function drawPointer() {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(-Math.PI / 2);
@@ -1056,23 +1101,23 @@
       ctx.restore();
     }
 
-    function drawBall(){
+    function drawBall() {
       let angle = state.landedBallAngle ?? (-Math.PI / 2);
       let radius = wheelRadius + 34;
       let bounce = 0;
       let logoRotation = state.ballLogoRotation;
 
-      if(state.ballAnim && state.ballAnim.active){
+      if (state.ballAnim && state.ballAnim.active) {
         const now = performance.now();
         let t = (now - state.ballAnim.startTime) / state.ballAnim.duration;
-        if(t > 1) t = 1;
+        if (t > 1) t = 1;
 
         const eased = 1 - Math.pow(1 - t, 2.2);
         angle = state.ballAnim.startAngle + (state.ballAnim.endAngle - state.ballAnim.startAngle) * eased;
 
-        if(t < 0.52){
+        if (t < 0.52) {
           radius = wheelRadius + 44;
-        } else if(t < 0.82){
+        } else if (t < 0.82) {
           const innerT = (t - 0.52) / 0.30;
           radius = (wheelRadius + 44) - innerT * 46;
         } else {
@@ -1126,7 +1171,7 @@
       ctx.restore();
     }
 
-    function drawCenterHub(){
+    function drawCenterHub() {
       ctx.save();
 
       ctx.beginPath();
@@ -1148,9 +1193,9 @@
       ctx.closePath();
       ctx.clip();
 
-      if(f3Logo.complete && f3Logo.naturalWidth > 0){
+      if (f3Logo.complete && f3Logo.naturalWidth > 0) {
         const size = 92;
-        ctx.drawImage(f3Logo, cx - size/2, cy - size/2, size, size);
+        ctx.drawImage(f3Logo, cx - size / 2, cy - size / 2, size, size);
       } else {
         ctx.fillStyle = '#f4c542';
         ctx.font = 'bold 24px Arial';
