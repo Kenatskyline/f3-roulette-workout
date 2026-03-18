@@ -17,7 +17,6 @@
       --yellow:#f2c94c;
       --orange:#f2994a;
       --red:#eb5757;
-      --dark:#101114;
     }
 
     *{box-sizing:border-box}
@@ -34,7 +33,7 @@
     body{ padding:12px; }
 
     .app{
-      max-width:1700px;
+      max-width:1780px;
       height:calc(100vh - 24px);
       margin:0 auto;
       display:grid;
@@ -218,21 +217,21 @@
     .centerPanel{
       display:grid;
       grid-template-rows:auto 1fr auto;
-      gap:12px;
+      gap:10px;
     }
 
     .resultBox{
       border:1px solid var(--line);
       background:#0f141d;
       border-radius:14px;
-      padding:12px 14px;
+      padding:10px 14px;
       display:flex;
       flex-direction:column;
       gap:6px;
     }
 
     .resultName{
-      font-size:28px;
+      font-size:26px;
       font-weight:900;
       line-height:1.02;
     }
@@ -258,7 +257,7 @@
     }
 
     canvas{
-      width:min(100%, 920px);
+      width:min(100%, 980px);
       height:auto;
       aspect-ratio:1/1;
       display:block;
@@ -341,6 +340,7 @@
       .layout{ grid-template-columns:1fr; }
       .wheelWrap{ grid-template-columns:1fr; }
       .sideStack{ grid-template-rows:auto auto auto; }
+      canvas{ width:min(100%, 860px); }
     }
   </style>
 </head>
@@ -399,7 +399,7 @@
 
         <div class="wheelWrap">
           <div class="wheelArea">
-            <canvas id="wheelCanvas" width="1000" height="1000"></canvas>
+            <canvas id="wheelCanvas" width="1100" height="1100"></canvas>
           </div>
 
           <div class="sideStack">
@@ -530,7 +530,7 @@
     const ctx = el.canvas.getContext('2d');
     const cx = el.canvas.width / 2;
     const cy = el.canvas.height / 2;
-    const wheelRadius = 370;
+    const wheelRadius = 405;
     const slotCount = slotDefs.length;
     const slotSpan = (Math.PI * 2) / slotCount;
 
@@ -554,7 +554,6 @@
 
     function startGame() {
       const names = parsePlayers(el.playerInput.value);
-
       if (names.length < 1) {
         alert('Enter at least 1 player.');
         return;
@@ -658,7 +657,6 @@
         roll -= slotDefs[i].weight;
         if (roll <= 0) return i;
       }
-
       return slotDefs.length - 1;
     }
 
@@ -695,14 +693,23 @@
       const extraSpins = (Math.PI * 2) * (5 + Math.floor(Math.random() * 2));
       const totalRotation = extraSpins + delta;
       const startAngle = state.wheelAngle;
-      const duration = 5600;
+      const duration = 5000 + Math.random() * 800;
       const startTime = performance.now();
 
-      const currentBallAngle = state.landedBallAngle ?? (Math.random() * Math.PI * 2);
-      const ballEndAngle = targetCenter + totalRotation * -0.24 + (Math.random() * 0.22 - 0.11);
+      const currentBallAngle =
+        (state.landedBallAngle ?? (Math.random() * Math.PI * 2))
+        - (Math.PI * 2 * (3 + Math.random() * 2));
+
+      const chaosFactor = 0.3 + Math.random() * 0.4;
+
+      const ballEndAngle =
+        currentBallAngle +
+        (Math.PI * 2 * (4 + Math.random() * 2)) +
+        (targetCenter - currentBallAngle) +
+        (Math.random() * chaosFactor - chaosFactor / 2);
 
       const startLogoRotation = state.ballLogoRotation;
-      const extraLogoSpins = (Math.PI * 2) * (6 + Math.random() * 5) * (Math.random() > 0.5 ? 1 : -1);
+      const extraLogoSpins = (Math.PI * 2) * (7 + Math.random() * 6) * (Math.random() > 0.5 ? 1 : -1);
       const endLogoRotation = startLogoRotation + extraLogoSpins + (Math.random() * 2 - 1);
 
       state.ballAnim = {
@@ -722,7 +729,7 @@
         const eased = 1 - Math.pow(1 - t, 3);
         state.wheelAngle = startAngle + totalRotation * eased;
 
-        const logoEased = 1 - Math.pow(1 - t, 2.4);
+        const logoEased = 1 - Math.pow(1 - t, 2.8);
         state.ballLogoRotation =
           state.ballAnim.startLogoRotation +
           (state.ballAnim.endLogoRotation - state.ballAnim.startLogoRotation) * logoEased;
@@ -768,12 +775,10 @@
 
     function findNextPlayerWithTurns(startIndex) {
       if (state.players.length === 0) return -1;
-
       for (let i = 0; i < state.players.length; i++) {
         const idx = (startIndex + i) % state.players.length;
         if (state.players[idx].turnsRemaining > 0) return idx;
       }
-
       return -1;
     }
 
@@ -803,9 +808,7 @@
 
       el.playerName.textContent = player ? player.name : '—';
       el.betDisplay.textContent =
-        state.currentBet == null
-          ? '—'
-          : (state.isAllIn ? `ALL IN (${state.currentBet})` : `${state.currentBet}`);
+        state.currentBet == null ? '—' : (state.isAllIn ? `ALL IN (${state.currentBet})` : `${state.currentBet}`);
 
       if (state.phase === 'setup') {
         el.resultName.textContent = 'Waiting to start…';
@@ -949,21 +952,21 @@
       ctx.save();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, wheelRadius + 110, 0, Math.PI * 2);
+      ctx.arc(cx, cy, wheelRadius + 118, 0, Math.PI * 2);
       ctx.fillStyle = '#2c2013';
       ctx.fill();
 
-      const ringGrad = ctx.createRadialGradient(cx, cy, wheelRadius - 10, cx, cy, wheelRadius + 70);
+      const ringGrad = ctx.createRadialGradient(cx, cy, wheelRadius - 10, cx, cy, wheelRadius + 78);
       ringGrad.addColorStop(0, '#5e4219');
       ringGrad.addColorStop(1, '#1d140c');
 
       ctx.beginPath();
-      ctx.arc(cx, cy, wheelRadius + 62, 0, Math.PI * 2);
+      ctx.arc(cx, cy, wheelRadius + 68, 0, Math.PI * 2);
       ctx.fillStyle = ringGrad;
       ctx.fill();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, wheelRadius + 18, 0, Math.PI * 2);
+      ctx.arc(cx, cy, wheelRadius + 20, 0, Math.PI * 2);
       ctx.fillStyle = '#20150d';
       ctx.fill();
 
@@ -997,7 +1000,6 @@
 
       for (let i = 0; i < slotDefs.length; i++) {
         const a = -Math.PI / 2 + i * slotSpan;
-
         ctx.save();
         ctx.rotate(a);
         ctx.beginPath();
@@ -1029,7 +1031,7 @@
 
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, wheelRadius - 24, start, end);
+      ctx.arc(0, 0, wheelRadius - 30, start, end);
       ctx.closePath();
       ctx.clip();
 
@@ -1039,13 +1041,13 @@
         ctx.rotate(Math.PI);
       }
 
-      const labelRadius = wheelRadius * 0.68;
+      const labelRadius = wheelRadius * 0.63;
       ctx.translate(labelRadius, 0);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = isLegendary ? '#f4c542' : '#ffffff';
-      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.48)';
       ctx.lineWidth = 3;
       ctx.shadowColor = 'rgba(0,0,0,0.45)';
       ctx.shadowBlur = 4;
@@ -1067,16 +1069,31 @@
         ];
       }
 
+      // adaptive font sizing so everything fits
+      let fontSingle = 18;
+      let fontDouble = 14;
+
+      const longest = Math.max(...lines.map(l => l.length));
+
+      if (longest >= 14) {
+        fontSingle = 15;
+        fontDouble = 12;
+      }
+      if (longest >= 17) {
+        fontSingle = 13;
+        fontDouble = 10;
+      }
+
       if (lines.length === 1) {
-        ctx.font = 'bold 20px Arial';
+        ctx.font = `bold ${fontSingle}px Arial`;
         ctx.strokeText(lines[0], 0, 0);
         ctx.fillText(lines[0], 0, 0);
       } else {
-        ctx.font = 'bold 15px Arial';
-        ctx.strokeText(lines[0], 0, -10);
-        ctx.fillText(lines[0], 0, -10);
-        ctx.strokeText(lines[1], 0, 10);
-        ctx.fillText(lines[1], 0, 10);
+        ctx.font = `bold ${fontDouble}px Arial`;
+        ctx.strokeText(lines[0], 0, -9);
+        ctx.fillText(lines[0], 0, -9);
+        ctx.strokeText(lines[1], 0, 9);
+        ctx.fillText(lines[1], 0, 9);
       }
 
       ctx.restore();
@@ -1088,9 +1105,9 @@
       ctx.rotate(-Math.PI / 2);
 
       ctx.beginPath();
-      ctx.moveTo(0, -(wheelRadius + 92));
-      ctx.lineTo(-30, -(wheelRadius + 28));
-      ctx.lineTo(30, -(wheelRadius + 28));
+      ctx.moveTo(0, -(wheelRadius + 95));
+      ctx.lineTo(-30, -(wheelRadius + 30));
+      ctx.lineTo(30, -(wheelRadius + 30));
       ctx.closePath();
       ctx.fillStyle = '#f4c542';
       ctx.fill();
@@ -1103,7 +1120,7 @@
 
     function drawBall() {
       let angle = state.landedBallAngle ?? (-Math.PI / 2);
-      let radius = wheelRadius + 40;
+      let radius = wheelRadius + 42;
       let bounce = 0;
       let logoRotation = state.ballLogoRotation;
 
@@ -1112,26 +1129,26 @@
         let t = (now - state.ballAnim.startTime) / state.ballAnim.duration;
         if (t > 1) t = 1;
 
-        const eased = 1 - Math.pow(1 - t, 2.2);
+        const eased = 1 - Math.pow(1 - t, 3.2);
         angle = state.ballAnim.startAngle + (state.ballAnim.endAngle - state.ballAnim.startAngle) * eased;
 
         if (t < 0.52) {
-          radius = wheelRadius + 50;
+          radius = wheelRadius + 52;
         } else if (t < 0.82) {
           const innerT = (t - 0.52) / 0.30;
-          radius = (wheelRadius + 50) - innerT * 50;
+          radius = (wheelRadius + 52) - innerT * 54;
         } else {
           const settleT = (t - 0.82) / 0.18;
           radius = wheelRadius - 4 + Math.sin(settleT * Math.PI * 4) * (6 * (1 - settleT));
         }
 
-        bounce = t < 0.55
-          ? Math.sin(t * 58) * 2
-          : t < 0.86
-            ? Math.sin(t * 95) * (11 * (1 - (t - 0.55) / 0.31))
-            : Math.sin(t * 120) * 1.8 * (1 - (t - 0.86) / 0.14);
+        const chaos = (1 - t);
+        bounce =
+          Math.sin(t * 65) * (6 * chaos) +
+          Math.sin(t * 120) * (3 * chaos) +
+          Math.sin(t * 220) * (1.5 * chaos);
 
-        const logoEased = 1 - Math.pow(1 - t, 2.4);
+        const logoEased = 1 - Math.pow(1 - t, 2.8);
         logoRotation =
           state.ballAnim.startLogoRotation +
           (state.ballAnim.endLogoRotation - state.ballAnim.startLogoRotation) * logoEased;
@@ -1175,7 +1192,7 @@
       ctx.save();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 82, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 84, 0, Math.PI * 2);
       ctx.fillStyle = '#b58a43';
       ctx.fill();
       ctx.lineWidth = 6;
@@ -1183,18 +1200,18 @@
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.arc(cx, cy, 58, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 60, 0, Math.PI * 2);
       ctx.fillStyle = '#2d1d09';
       ctx.fill();
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(cx, cy, 48, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 50, 0, Math.PI * 2);
       ctx.closePath();
       ctx.clip();
 
       if (f3Logo.complete && f3Logo.naturalWidth > 0) {
-        const size = 96;
+        const size = 100;
         ctx.drawImage(f3Logo, cx - size / 2, cy - size / 2, size, size);
       } else {
         ctx.fillStyle = '#f4c542';
