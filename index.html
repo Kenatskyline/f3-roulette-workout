@@ -726,7 +726,7 @@
         let t = (now - startTime) / duration;
         if (t > 1) t = 1;
 
-        const eased = 1 - Math.pow(1 - t, 3);
+        const eased = 1 - Math.pow(1 - t, 3.2);
         state.wheelAngle = startAngle + totalRotation * eased;
 
         const logoEased = 1 - Math.pow(1 - t, 2.8);
@@ -995,7 +995,7 @@
         ctx.strokeStyle = '#d4b06a';
         ctx.stroke();
 
-        drawWedgeLabel(seg.label, start, end, mid, seg.rarity === 'legendary');
+        drawWedgeLabel(seg.label, mid, seg.rarity === 'legendary');
       }
 
       for (let i = 0; i < slotDefs.length; i++) {
@@ -1026,28 +1026,17 @@
       ctx.restore();
     }
 
-    function drawWedgeLabel(text, start, end, mid, isLegendary) {
+    function drawWedgeLabel(text, mid, isLegendary) {
       ctx.save();
 
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, wheelRadius - 30, start, end);
-      ctx.closePath();
-      ctx.clip();
-
+      // spray-painted on the slice: no flipping logic
       ctx.rotate(mid);
-
-      if (Math.cos(mid) < 0) {
-        ctx.rotate(Math.PI);
-      }
-
-      const labelRadius = wheelRadius * 0.63;
-      ctx.translate(labelRadius, 0);
+      ctx.translate(wheelRadius * 0.60, 0);
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = isLegendary ? '#f4c542' : '#ffffff';
-      ctx.strokeStyle = 'rgba(0,0,0,0.48)';
+      ctx.strokeStyle = 'rgba(0,0,0,0.50)';
       ctx.lineWidth = 3;
       ctx.shadowColor = 'rgba(0,0,0,0.45)';
       ctx.shadowBlur = 4;
@@ -1069,19 +1058,21 @@
         ];
       }
 
-      // adaptive font sizing so everything fits
-      let fontSingle = 18;
-      let fontDouble = 14;
+      let fontSingle = 17;
+      let fontDouble = 13;
 
       const longest = Math.max(...lines.map(l => l.length));
-
-      if (longest >= 14) {
+      if (longest >= 11) {
         fontSingle = 15;
         fontDouble = 12;
       }
-      if (longest >= 17) {
+      if (longest >= 14) {
         fontSingle = 13;
         fontDouble = 10;
+      }
+      if (longest >= 17) {
+        fontSingle = 11;
+        fontDouble = 9;
       }
 
       if (lines.length === 1) {
@@ -1090,10 +1081,10 @@
         ctx.fillText(lines[0], 0, 0);
       } else {
         ctx.font = `bold ${fontDouble}px Arial`;
-        ctx.strokeText(lines[0], 0, -9);
-        ctx.fillText(lines[0], 0, -9);
-        ctx.strokeText(lines[1], 0, 9);
-        ctx.fillText(lines[1], 0, 9);
+        ctx.strokeText(lines[0], 0, -8);
+        ctx.fillText(lines[0], 0, -8);
+        ctx.strokeText(lines[1], 0, 8);
+        ctx.fillText(lines[1], 0, 8);
       }
 
       ctx.restore();
