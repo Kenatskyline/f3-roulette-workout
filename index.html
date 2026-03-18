@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F3 Roulette Workout V3</title>
+  <title>F3 Roulette Workout</title>
   <style>
     :root{
       --bg:#090b10;
@@ -13,9 +13,7 @@
       --text:#f5f7fb;
       --muted:#aab4c6;
       --gold:#f4c542;
-      --gold2:#c89b2c;
       --green:#2ecc71;
-      --blue:#2f80ed;
       --yellow:#f2c94c;
       --orange:#f2994a;
       --red:#eb5757;
@@ -201,7 +199,7 @@
     }
 
     .chip5{background:var(--green)}
-    .chip10{background:var(--blue)}
+    .chip10{background:#2f80ed}
     .chip15{background:var(--yellow); color:#111}
     .chip20{background:var(--orange)}
     .chip25{background:var(--red)}
@@ -975,11 +973,16 @@
 
         const mid = start + slotSpan / 2;
 
-        // place text strip inside wedge like your green lines
+        // consistent strip direction for every wedge
         ctx.save();
         ctx.rotate(mid);
+
+        // flip bottom-half labels so they all read consistently
+        if (Math.cos(mid) < 0) {
+          ctx.rotate(Math.PI);
+        }
+
         ctx.translate(wheelRadius * 0.63, 0);
-        ctx.rotate(-(mid)); // keep strip horizontal on screen
 
         drawTextStrip(seg.label, seg.rarity === 'legendary');
         ctx.restore();
@@ -1013,22 +1016,22 @@
     }
 
     function drawTextStrip(text, isLegendary){
-      const w = 120;
-      const h = 18;
+      const w = 110;
+      const h = 16;
 
       ctx.save();
 
-      ctx.fillStyle = isLegendary ? 'rgba(0,0,0,0.82)' : 'rgba(255,255,255,0.65)';
-      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 1.2;
+      ctx.fillStyle = isLegendary ? 'rgba(0,0,0,0.88)' : 'rgba(255,255,255,0.72)';
+      ctx.strokeStyle = isLegendary ? '#f4c542' : 'rgba(0,0,0,0.14)';
+      ctx.lineWidth = 1;
 
       ctx.beginPath();
-      ctx.rect(-w/2, -h/2, w, h);
+      ctx.rect(-w / 2, -h / 2, w, h);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = isLegendary ? '#f4c542' : '#111';
-      ctx.font = 'bold 11px Arial';
+      ctx.font = 'bold 10px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, 0, 0);
