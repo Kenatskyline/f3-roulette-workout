@@ -35,10 +35,10 @@
     }
 
     .app{
-      width:min(1520px,96vw);
+      width:min(1560px,96vw);
       margin:18px auto;
       display:grid;
-      grid-template-columns:380px minmax(520px,1fr) 360px;
+      grid-template-columns:400px minmax(540px,1fr) 380px;
       gap:18px;
       align-items:start;
     }
@@ -128,7 +128,7 @@
 
     .wheel-shell{
       position:relative;
-      width:min(100%,900px);
+      width:min(100%,920px);
       aspect-ratio:1/1;
       margin:6px auto 0;
       display:grid;
@@ -222,7 +222,8 @@
       text-transform:uppercase;
     }
 
-    .field input{
+    .field input,
+    .field select{
       width:100%;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.08);
@@ -233,7 +234,8 @@
       outline:none;
     }
 
-    .field input:focus{
+    .field input:focus,
+    .field select:focus{
       border-color:rgba(244,197,66,.55);
       box-shadow:0 0 0 3px rgba(244,197,66,.12);
     }
@@ -393,6 +395,7 @@
       text-align:left;
       border-bottom:1px solid rgba(255,255,255,.07);
       font-size:.92rem;
+      vertical-align:top;
     }
 
     th{
@@ -413,11 +416,20 @@
 
     .muted{color:var(--muted)}
 
-    @media (max-width:1280px){
+    .pointer-line{
+      display:flex;
+      justify-content:center;
+      margin-top:8px;
+      color:var(--gold);
+      font-weight:900;
+      font-size:.9rem;
+    }
+
+    @media (max-width:1320px){
       .app{grid-template-columns:1fr}
       .left-col,.right-col{order:2}
       .center-col{order:1}
-      .wheel-shell{width:min(100%,820px)}
+      .wheel-shell{width:min(100%,840px)}
     }
 
     @media (max-width:640px){
@@ -460,8 +472,9 @@
             <button class="secondary" id="addPlayerBtn">Add Player</button>
 
             <div class="small">
-              Each player starts with <strong>double chips</strong>: two each of 5, 10, 15, 20, and 25.
-              One chip per player per round. Rarer slices award bigger multipliers.
+              Each player gets two chips each of 5, 10, 15, 20, and 25. Every player now bets
+              <strong>independently</strong>: choose one chip and one slice. Only players who picked the
+              winning slice score.
             </div>
 
             <div class="players" id="playersList"></div>
@@ -499,24 +512,26 @@
         <div class="title">
           <div class="title-main">
             <h1>F3 Roulette Workout</h1>
-            <div class="subtitle">Da Grizz edition — custom center logo, opposite-direction ball spin, mechanical clicks, and no teleport bug.</div>
+            <div class="subtitle">Da Grizz edition — custom center logo, opposite-direction ball spin, independent betting, mechanical clicks, and no end-stop teleport.</div>
             <div class="top-pills">
               <span class="pill">17 slices</span>
+              <span class="pill">Independent bets</span>
               <span class="pill">Opposite spin</span>
               <span class="pill">Mechanical sound</span>
-              <span class="pill">Rarity multipliers</span>
               <span class="pill">Custom F3 center</span>
             </div>
           </div>
-          <div class="badge">House Rules: Every Spin Matters</div>
+          <div class="badge">House Rules: Pick Your Slice</div>
         </div>
 
         <div class="wheel-shell">
           <canvas id="wheelCanvas" width="1400" height="1400" aria-label="Roulette wheel"></canvas>
         </div>
 
+        <div class="pointer-line">▲ Winning pointer</div>
+
         <div class="spin-bar">
-          <div class="status" id="statusText">Select bets from the player chips, then spin the wheel.</div>
+          <div class="status" id="statusText">Add players, choose one chip and one slice for each player, then spin the wheel.</div>
           <button class="secondary" id="shuffleBtn">Shuffle Wheel</button>
           <button class="primary" id="spinBtn">Spin Wheel</button>
         </div>
@@ -532,7 +547,7 @@
           <div class="result-box">
             <div class="result-label">Latest Landing</div>
             <div class="result-main" id="resultMain">Waiting for spin…</div>
-            <div class="result-sub" id="resultSub">The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows, chatters, and settles once.</div>
+            <div class="result-sub" id="resultSub">The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows and settles once without snapping to a new angle.</div>
           </div>
         </div>
       </section>
@@ -553,7 +568,7 @@
             <tbody id="sliceTableBody"></tbody>
           </table>
           <div class="footer-note">
-            The winning slice flashes after the ball settles. Points = bet × rarity multiplier.
+            Winner is read at the fixed top pointer. Rarity sets the point multiplier.
           </div>
         </div>
       </section>
@@ -568,7 +583,7 @@
               <tr>
                 <th>Player</th>
                 <th>Points</th>
-                <th>Last Win</th>
+                <th>Last Result</th>
               </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
@@ -582,6 +597,10 @@
     // =========================
     // CONFIG / DATA
     // =========================
+    function css(name){
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
     const rarityColors = {
       common: css('--green'),
       uncommon: css('--yellow'),
@@ -731,7 +750,7 @@
     }
 
     function playHop(){
-      playBallClack(1.3);
+      playBallClack(1.25);
       playBallClack(1.0);
     }
 
@@ -750,10 +769,6 @@
     // =========================
     // HELPERS
     // =========================
-    function css(name){
-      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-    }
-
     function shuffleArray(arr){
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -820,6 +835,28 @@
       return size;
     }
 
+    function normalizeAngle(angle){
+      const full = Math.PI * 2;
+      return ((angle % full) + full) % full;
+    }
+
+    function getWinningIndexFromPointer(){
+      const arc = getArc();
+      const pointerAngle = -Math.PI / 2;
+      const relative = normalizeAngle(pointerAngle - wheelRotation);
+      return Math.floor(relative / arc) % slices.length;
+    }
+
+    function canSpin(){
+      if (isSpinning) return false;
+      if (players.length === 0) return false;
+
+      const activeBettors = players.filter(player => player.currentBet > 0 || player.currentPick !== null);
+      if (activeBettors.length === 0) return true;
+
+      return activeBettors.every(player => player.currentBet > 0 && player.currentPick !== null);
+    }
+
     // =========================
     // PLAYERS
     // =========================
@@ -835,7 +872,10 @@
           selected: false
         })),
         currentBet: 0,
-        lastBet: 0
+        currentPick: null,
+        lastBet: 0,
+        lastPick: null,
+        lastResultText: '—'
       };
     }
 
@@ -847,30 +887,36 @@
       playerStartPointsInput.value = '0';
       renderPlayers();
       renderLeaderboard();
-      setStatus('Player added. Select one chip per player, then spin.');
+      updateSpinButtonState();
+      setStatus('Player added. Choose a chip and a slice for that player.');
     }
 
     function clearAllSelections(){
       players.forEach(player => {
         player.currentBet = 0;
+        player.currentPick = null;
         player.chips.forEach(chip => chip.selected = false);
       });
       renderPlayers();
       renderLeaderboard();
-      setStatus('All current bet selections cleared.');
+      updateSpinButtonState();
+      setStatus('All current bets and picks cleared.');
     }
 
     function resetGame(){
-      if (!confirm('Reset the entire game, points, and chips?')) return;
+      if (!confirm('Reset the entire game, points, chips, and picks?')) return;
       players = [];
       highlightIndex = null;
       highlightStrength = 0;
+      wheelRotation = 0;
+      ballAngleWorld = -Math.PI / 2;
       resultMain.textContent = 'Waiting for spin…';
-      resultSub.textContent = 'The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows, chatters, and settles once.';
+      resultSub.textContent = 'The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows and settles once without snapping to a new angle.';
       renderPlayers();
       renderLeaderboard();
       renderSliceTable();
       drawWheel();
+      updateSpinButtonState();
       setStatus('Game reset. Add players to start again.');
     }
 
@@ -878,20 +924,44 @@
       if (isSpinning) return;
       const player = players.find(p => p.id === playerId);
       if (!player) return;
+
       const chip = player.chips.find(c => c.id === chipId);
       if (!chip || chip.spent) return;
 
       player.chips.forEach(c => {
         if (!c.spent) c.selected = false;
       });
+
       chip.selected = true;
       player.currentBet = chip.value;
 
       renderPlayers();
       renderLeaderboard();
-      setStatus('Bet locked. Spin when ready.');
+      updateSpinButtonState();
+      setStatus(`${player.name} locked ${chip.value} points.`);
     }
 
+    function setPlayerPick(playerId, pickIndex){
+      if (isSpinning) return;
+      const player = players.find(p => p.id === playerId);
+      if (!player) return;
+
+      player.currentPick = pickIndex === '' ? null : Number(pickIndex);
+
+      renderPlayers();
+      renderLeaderboard();
+      updateSpinButtonState();
+
+      if (player.currentPick === null) {
+        setStatus(`${player.name} cleared their slice pick.`);
+      } else {
+        setStatus(`${player.name} picked ${slices[player.currentPick].label}.`);
+      }
+    }
+
+    // =========================
+    // SCORING
+    // =========================
     function scoreWinner(index){
       const slice = slices[index];
       const multiplier = rarityMultipliers[slice.rarity] || 1;
@@ -900,34 +970,55 @@
       highlightStrength = 1;
       playWin();
 
-      const bettingPlayers = players.filter(p => p.currentBet > 0);
+      const activePlayers = players.filter(player => player.currentBet > 0 && player.currentPick !== null);
+      const winners = [];
+      const misses = [];
 
-      if (bettingPlayers.length === 0) {
+      if (activePlayers.length === 0) {
         resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
-        resultSub.textContent = `No bets were placed. Exercise still stands: ${slice.label}.`;
+        resultSub.textContent = `No valid player bets were placed. Exercise still stands: ${slice.label}.`;
       } else {
-        const awardedParts = [];
-
-        bettingPlayers.forEach(player => {
+        activePlayers.forEach(player => {
           const chip = player.chips.find(c => c.selected && !c.spent);
-          if (chip) {
+          if (!chip) return;
+
+          const pickedLabel = slices[player.currentPick].label;
+          player.lastPick = player.currentPick;
+
+          chip.spent = true;
+          chip.selected = false;
+
+          if (player.currentPick === index) {
             const earned = chip.value * multiplier;
-            chip.spent = true;
-            chip.selected = false;
             player.points += earned;
             player.lastBet = earned;
-            player.currentBet = 0;
-            awardedParts.push(`${player.name} +${earned}`);
+            player.lastResultText = `Hit ${pickedLabel} +${earned}`;
+            winners.push(`${player.name} +${earned}`);
+          } else {
+            player.lastBet = 0;
+            player.lastResultText = `Missed ${pickedLabel}`;
+            misses.push(`${player.name} missed`);
           }
+
+          player.currentBet = 0;
+          player.currentPick = null;
         });
 
         resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
-        resultSub.textContent = `Multiplier applied. ${awardedParts.join(' • ')}. Exercise: ${slice.label}.`;
+
+        if (winners.length === 0) {
+          resultSub.textContent = `No one hit it. Winning slice: ${slice.label}. ${misses.join(' • ')}`;
+        } else if (misses.length === 0) {
+          resultSub.textContent = `Winning slice: ${slice.label}. ${winners.join(' • ')}`;
+        } else {
+          resultSub.textContent = `Winning slice: ${slice.label}. ${winners.join(' • ')} • ${misses.join(' • ')}`;
+        }
       }
 
       renderPlayers();
       renderLeaderboard();
-      setStatus(`Winner: ${slice.label} (x${multiplier}). Bets scored.`);
+      updateSpinButtonState();
+      setStatus(`Winner: ${slice.label} (x${multiplier}). Independent bets scored.`);
     }
 
     // =========================
@@ -954,15 +1045,36 @@
           `;
         }).join('');
 
+        const optionsHtml = slices.map((slice, index) => `
+          <option value="${index}" ${player.currentPick === index ? 'selected' : ''}>
+            ${escapeHtml(slice.label)} (${rarityLabel(slice.rarity)})
+          </option>
+        `).join('');
+
         wrapper.innerHTML = `
           <div class="player-top">
             <div class="player-name">${escapeHtml(player.name)}</div>
             <div class="player-points">${player.points} pts</div>
           </div>
+
+          <div class="field">
+            <label>Pick Slice</label>
+            <select class="player-pick" data-player-id="${player.id}">
+              <option value="">Choose a slice</option>
+              ${optionsHtml}
+            </select>
+          </div>
+
           <div class="chip-bank">${chipsHtml}</div>
+
           <div class="bet-line">
             <span>Current Bet</span>
             <span class="bet-amt">${player.currentBet > 0 ? player.currentBet : '—'}</span>
+          </div>
+
+          <div class="bet-line">
+            <span>Current Pick</span>
+            <span class="bet-amt">${player.currentPick !== null ? escapeHtml(slices[player.currentPick].label) : '—'}</span>
           </div>
         `;
 
@@ -972,22 +1084,30 @@
       playersList.querySelectorAll('.chip').forEach(btn => {
         btn.addEventListener('click', () => toggleChip(btn.dataset.playerId, btn.dataset.chipId));
       });
+
+      playersList.querySelectorAll('.player-pick').forEach(select => {
+        select.addEventListener('change', () => {
+          setPlayerPick(select.dataset.playerId, select.value);
+        });
+      });
     }
 
     function renderLeaderboard(){
       leaderboardBody.innerHTML = '';
+
       if (players.length === 0) {
         leaderboardBody.innerHTML = `<tr><td colspan="3" class="muted">No players yet.</td></tr>`;
         return;
       }
 
       const sorted = [...players].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name));
+
       sorted.forEach(player => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><strong>${escapeHtml(player.name)}</strong></td>
           <td>${player.points}</td>
-          <td>${player.lastBet > 0 ? player.lastBet : '—'}</td>
+          <td>${escapeHtml(player.lastResultText || '—')}</td>
         `;
         leaderboardBody.appendChild(tr);
       });
@@ -1015,9 +1135,9 @@
       });
     }
 
-    function drawBall(cx, cy, ballTrackRadius){
-      const bx = cx + Math.cos(ballAngleWorld) * ballTrackRadius;
-      const by = cy + Math.sin(ballAngleWorld) * ballTrackRadius;
+    function drawBall(cx, cy, trackRadius){
+      const bx = cx + Math.cos(ballAngleWorld) * trackRadius;
+      const by = cy + Math.sin(ballAngleWorld) * trackRadius;
 
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,.45)';
@@ -1048,6 +1168,25 @@
       ctx.textBaseline = 'middle';
       ctx.font = '900 18px Inter, system-ui, sans-serif';
       ctx.fillText('F3', bx, by + 1);
+
+      ctx.restore();
+    }
+
+    function drawPointer(cx, cy, outerTrackRadius){
+      const tipY = cy - outerTrackRadius - 20;
+      ctx.save();
+
+      ctx.beginPath();
+      ctx.moveTo(cx, tipY);
+      ctx.lineTo(cx - 28, tipY - 48);
+      ctx.lineTo(cx + 28, tipY - 48);
+      ctx.closePath();
+      ctx.fillStyle = css('--gold');
+      ctx.fill();
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(17,17,17,.25)';
+      ctx.stroke();
 
       ctx.restore();
     }
@@ -1186,6 +1325,11 @@
       ctx.stroke();
 
       drawBall(cx, cy, outerTrackRadius);
+      drawPointer(cx, cy, outerTrackRadius);
+    }
+
+    function updateSpinButtonState(){
+      spinBtn.disabled = !canSpin();
     }
 
     // =========================
@@ -1222,7 +1366,7 @@
     }
 
     function spinWheel(){
-      if (isSpinning) return;
+      if (!canSpin() || isSpinning) return;
 
       ensureAudio();
       isSpinning = true;
@@ -1236,21 +1380,19 @@
 
       const myToken = ++spinToken;
       const arc = getArc();
-      const winningIndex = Math.floor(Math.random() * slices.length);
 
       const startWheel = wheelRotation;
       const startBall = ballAngleWorld;
 
-      // Wheel spins clockwise and stops first
+      // Wheel spins clockwise and stops first.
       const wheelTurns = 4 + Math.random() * 2;
       const wheelStopTarget = startWheel + wheelTurns * Math.PI * 2;
 
-      // Winning slice center relative to stopped wheel
+      // Ball spins opposite direction and lands naturally without a final snap.
+      const winningIndex = Math.floor(Math.random() * slices.length);
       const targetRelativeCenter = winningIndex * arc + arc / 2;
       const finalBallWorld = wheelStopTarget + targetRelativeCenter;
-
-      // FIXED: animate toward a target that resolves to the exact final angle path
-      const extraOppositeTurns = 10 + Math.random() * 3;
+      const extraOppositeTurns = Math.floor(10 + Math.random() * 3);
       const ballTravelTarget = finalBallWorld - extraOppositeTurns * Math.PI * 2;
 
       const wheelDuration = 3400 + Math.random() * 500;
@@ -1281,22 +1423,20 @@
           chatter = Math.sin(local * Math.PI * 6) * arc * 0.035 * (1 - local);
         }
 
-        // FIXED: base animation and final target are on the same path
         const ballBase = startBall + (ballTravelTarget - startBall) * easeOutCubic(tBall);
         ballAngleWorld = ballBase + chatter;
 
-        if (tBall >= 1) {
-          ballAngleWorld = finalBallWorld;
-        }
+        const normalizedWheel = normalizeAngle(wheelRotation);
+        const normalizedBall = normalizeAngle(ballAngleWorld);
 
-        const wheelBucket = Math.floor(wheelRotation / (arc / 2));
+        const wheelBucket = Math.floor(normalizedWheel / (arc / 2));
         if (wheelBucket !== lastWheelBucket && tWheel < 0.96) {
           lastWheelBucket = wheelBucket;
           playClick(0.4 + (1 - tWheel) * 0.2);
           playMechanicalWhirr(1 - tWheel);
         }
 
-        const ballBucket = Math.floor(ballAngleWorld / (arc / 3));
+        const ballBucket = Math.floor(normalizedBall / (arc / 3));
         if (ballBucket !== lastBallBucket && tBall < 0.995) {
           lastBallBucket = ballBucket;
           playBallClack(0.8 + (1 - tBall) * 0.25);
@@ -1328,11 +1468,15 @@
           setButtonsDisabled(false);
 
           wheelRotation = wheelStopTarget;
-          ballAngleWorld = finalBallWorld;
+          // Intentionally do NOT snap ballAngleWorld here.
+          // The ball already animated to its true final visible landing path.
+
+          const scoredIndex = getWinningIndexFromPointer();
 
           drawWheel();
+          updateSpinButtonState();
           setStatus('Ball settled. Flashing winning slice…');
-          flashWinnerThenScore(winningIndex);
+          flashWinnerThenScore(scoredIndex);
         }
       }
 
@@ -1342,8 +1486,10 @@
     function shuffleWheel(){
       if (isSpinning) return;
       shuffleArray(slices);
+      renderPlayers();
       renderSliceTable();
       drawWheel();
+      updateSpinButtonState();
       setStatus('Wheel shuffled.');
     }
 
@@ -1366,6 +1512,7 @@
       renderLeaderboard();
       renderSliceTable();
       drawWheel();
+      updateSpinButtonState();
     }
 
     init();
