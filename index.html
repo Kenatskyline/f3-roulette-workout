@@ -8,7 +8,6 @@
     :root{
       --bg:#090b10;
       --panel:#121722;
-      --panel2:#1a2232;
       --line:#2c3447;
       --text:#f5f7fb;
       --muted:#aab4c6;
@@ -18,7 +17,6 @@
       --orange:#f2994a;
       --red:#eb5757;
       --black:#111111;
-      --white:#ffffff;
       --shadow:0 18px 40px rgba(0,0,0,.45);
       --radius:20px;
     }
@@ -473,7 +471,8 @@
 
             <div class="small">
               Each player starts with <strong>double chips</strong>: two each of 5, 10, 15, 20, and 25.
-              No “No Points” button. One active chip selection per player per round.
+              No “No Points” button. One chip per player per round.
+              Rarer slices award bigger point multipliers.
             </div>
 
             <div class="players" id="playersList"></div>
@@ -488,19 +487,19 @@
 
       <section class="card">
         <div class="card-header">
-          <h3>Color Odds</h3>
+          <h3>Color Multipliers</h3>
         </div>
         <div class="card-body">
           <div class="legend">
-            <div class="legend-item"><span class="swatch" style="background:var(--green)"></span><div><strong>Green</strong><br><span class="small">7 / 17 = 41.2%</span></div></div>
-            <div class="legend-item"><span class="swatch" style="background:var(--yellow)"></span><div><strong>Yellow</strong><br><span class="small">3 / 17 = 17.6%</span></div></div>
-            <div class="legend-item"><span class="swatch" style="background:var(--orange)"></span><div><strong>Orange</strong><br><span class="small">3 / 17 = 17.6%</span></div></div>
-            <div class="legend-item"><span class="swatch" style="background:var(--red)"></span><div><strong>Red</strong><br><span class="small">2 / 17 = 11.8%</span></div></div>
-            <div class="legend-item"><span class="swatch" style="background:#000"></span><div><strong>Black</strong><br><span class="small">2 / 17 = 11.8%</span></div></div>
+            <div class="legend-item"><span class="swatch" style="background:var(--green)"></span><div><strong>Green</strong><br><span class="small">Common • x1</span></div></div>
+            <div class="legend-item"><span class="swatch" style="background:var(--yellow)"></span><div><strong>Yellow</strong><br><span class="small">Uncommon • x2</span></div></div>
+            <div class="legend-item"><span class="swatch" style="background:var(--orange)"></span><div><strong>Orange</strong><br><span class="small">Rare • x3</span></div></div>
+            <div class="legend-item"><span class="swatch" style="background:var(--red)"></span><div><strong>Red</strong><br><span class="small">Hard • x4</span></div></div>
+            <div class="legend-item"><span class="swatch" style="background:#000"></span><div><strong>Black</strong><br><span class="small">Legendary • x5</span></div></div>
           </div>
 
           <div class="footer-note">
-            Final wheel: SSH x2, Squats x1, Merkins x1, Thruster x1, Curl x1, Grizz Run x1, Plank Jacks x2, Lunges x1, Pull Overs x2, Dealer’s Choice x1, Skull Crushers x1, Bobby Hurley x1, Burpees x2.
+            Final wheel: SSH x1, MTN CLIMBER x1, Squats x1, Merkins x1, Thruster x1, Curl x1, Grizz Run x1, Plank Jacks x2, Lunges x1, Pull Overs x2, Dealer’s Choice x1, Skull Crushers x1, Bobby Hurley x1, Burpees x2.
           </div>
         </div>
       </section>
@@ -511,12 +510,12 @@
         <div class="title">
           <div class="title-main">
             <h1>F3 Roulette Workout</h1>
-            <div class="subtitle">Da Grizz edition — dramatic ball physics, opposite-direction wheel spin, and your custom center logo.</div>
+            <div class="subtitle">Da Grizz edition — custom center logo, opposite-direction ball spin, mechanical clicks, and no weird second settle.</div>
             <div class="top-pills">
               <span class="pill">17 slices</span>
-              <span class="pill">2x Burpees</span>
-              <span class="pill">Dealer’s Choice</span>
-              <span class="pill">Grizz Run</span>
+              <span class="pill">Opposite spin</span>
+              <span class="pill">Mechanical sound</span>
+              <span class="pill">Rarity multipliers</span>
               <span class="pill">Custom F3 center</span>
             </div>
           </div>
@@ -546,7 +545,7 @@
           <div class="result-box">
             <div class="result-label">Latest Landing</div>
             <div class="result-main" id="resultMain">Waiting for spin…</div>
-            <div class="result-sub" id="resultSub">The ball spins opposite the wheel, the wheel stops first, then the ball slows, hops, and settles onto the winning slice.</div>
+            <div class="result-sub" id="resultSub">The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, and the ball slows, chatters, and settles one time only.</div>
           </div>
         </div>
       </section>
@@ -567,7 +566,7 @@
             <tbody id="sliceTableBody"></tbody>
           </table>
           <div class="footer-note">
-            Orange = Pull Overs x2 + Dealer’s Choice. Black = Burpees x2. The winning slice flashes after the ball settles.
+            The winning slice flashes after the ball settles. Points = bet × rarity multiplier.
           </div>
         </div>
       </section>
@@ -582,7 +581,7 @@
               <tr>
                 <th>Player</th>
                 <th>Points</th>
-                <th>Last Bet</th>
+                <th>Last Win</th>
               </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
@@ -612,9 +611,17 @@
       legendary: '#f5f7fb'
     };
 
+    const rarityMultipliers = {
+      common: 1,
+      uncommon: 2,
+      rare: 3,
+      hard: 4,
+      legendary: 5
+    };
+
     let slices = [
       { label: 'SSH', rarity: 'common' },
-      { label: 'SSH', rarity: 'common' },
+      { label: 'MTN CLIMBER', rarity: 'common' },
       { label: 'SQUATS', rarity: 'common' },
       { label: 'MERKINS', rarity: 'common' },
       { label: 'THRUSTER', rarity: 'common' },
@@ -636,16 +643,12 @@
 
     let players = [];
     let isSpinning = false;
-
-    // Wheel and ball state
     let wheelRotation = 0;
     let ballAngleWorld = -Math.PI / 2;
-    let settledSliceIndex = null;
     let highlightIndex = null;
     let highlightStrength = 0;
     let spinToken = 0;
 
-    // center logo
     const centerLogo = new Image();
     centerLogo.src = 'f3-logo.PNG';
     centerLogo.onload = () => drawWheel();
@@ -677,107 +680,80 @@
     // AUDIO
     // =========================
     let audioCtx = null;
-    let wheelNoiseSource = null;
-    let wheelNoiseGain = null;
+    let wheelRattleInterval = null;
 
     function ensureAudio(){
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function makeNoiseBuffer(seconds = 1.5){
-      const sr = audioCtx.sampleRate;
-      const buffer = audioCtx.createBuffer(1, sr * seconds, sr);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i++) {
-        data[i] = (Math.random() * 2 - 1) * 0.8;
-      }
-      return buffer;
-    }
-
-    function startWheelNoise(){
-      ensureAudio();
-      stopWheelNoise();
-
-      const src = audioCtx.createBufferSource();
-      src.buffer = makeNoiseBuffer(2);
-      src.loop = true;
-
-      const filter = audioCtx.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.value = 900;
-      filter.Q.value = 0.7;
-
-      const gain = audioCtx.createGain();
-      gain.gain.value = 0.0001;
-
-      src.connect(filter);
-      filter.connect(gain);
-      gain.connect(audioCtx.destination);
-      src.start();
-
-      wheelNoiseSource = src;
-      wheelNoiseGain = gain;
-    }
-
-    function updateWheelNoise(speed){
-      if (!wheelNoiseGain || !audioCtx) return;
-      const now = audioCtx.currentTime;
-      const volume = 0.01 + speed * 0.06;
-      wheelNoiseGain.gain.cancelScheduledValues(now);
-      wheelNoiseGain.gain.linearRampToValueAtTime(volume, now + 0.04);
-    }
-
-    function stopWheelNoise(){
-      if (wheelNoiseSource) {
-        try { wheelNoiseSource.stop(); } catch {}
-        wheelNoiseSource.disconnect();
-        wheelNoiseSource = null;
-      }
-      if (wheelNoiseGain) {
-        wheelNoiseGain.disconnect();
-        wheelNoiseGain = null;
-      }
-    }
-
     function playOsc(freq, type, duration, gainValue, delay = 0){
       ensureAudio();
+
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
 
       osc.type = type;
       osc.frequency.value = freq;
+
+      filter.type = 'lowpass';
+      filter.frequency.value = 2200;
+
       gain.gain.value = 0.0001;
 
-      osc.connect(gain);
+      osc.connect(filter);
+      filter.connect(gain);
       gain.connect(audioCtx.destination);
 
       const t0 = audioCtx.currentTime + delay;
       osc.start(t0);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, gainValue), t0 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, gainValue), t0 + 0.004);
       gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
-      osc.stop(t0 + duration + 0.03);
+      osc.stop(t0 + duration + 0.02);
     }
 
-    function playTick(intensity = 1){
-      const f = 950 + Math.random() * 250;
-      playOsc(f, 'square', 0.04, 0.025 * intensity);
-      playOsc(f * 0.52, 'triangle', 0.055, 0.012 * intensity, 0.003);
+    function playClick(intensity = 1){
+      const f = 1400 + Math.random() * 500;
+      playOsc(f, 'square', 0.022, 0.018 * intensity);
+      playOsc(f * 0.55, 'triangle', 0.03, 0.01 * intensity, 0.002);
     }
 
-    function playBallRoll(intensity = 1){
-      const f = 650 + Math.random() * 120;
-      playOsc(f, 'triangle', 0.05, 0.01 * intensity);
+    function playBallClack(intensity = 1){
+      const f = 1800 + Math.random() * 700;
+      playOsc(f, 'square', 0.016, 0.02 * intensity);
+      playOsc(f * 0.42, 'triangle', 0.028, 0.012 * intensity, 0.001);
+    }
+
+    function playMechanicalWhirr(speed = 1){
+      const base = 90 + speed * 80;
+      playOsc(base, 'sawtooth', 0.06, 0.008 + speed * 0.01);
+      playOsc(base * 1.9, 'triangle', 0.05, 0.004 + speed * 0.005, 0.004);
+    }
+
+    function startWheelRattle(){
+      stopWheelRattle();
+      wheelRattleInterval = setInterval(() => {
+        playMechanicalWhirr(0.8);
+      }, 55);
+    }
+
+    function stopWheelRattle(){
+      if (wheelRattleInterval) {
+        clearInterval(wheelRattleInterval);
+        wheelRattleInterval = null;
+      }
     }
 
     function playHop(){
-      playOsc(510, 'triangle', 0.08, 0.04);
-      playOsc(720, 'sine', 0.07, 0.02, 0.01);
+      playBallClack(1.3);
+      playBallClack(1.0);
     }
 
     function playSettle(){
-      playOsc(230, 'triangle', 0.22, 0.055);
-      playOsc(150, 'sine', 0.36, 0.03, 0.03);
+      playClick(1.0);
+      playClick(0.8);
+      playOsc(220, 'triangle', 0.12, 0.025, 0.01);
     }
 
     function playWin(){
@@ -805,13 +781,6 @@
       let a = angle % full;
       if (a < 0) a += full;
       return a;
-    }
-
-    function shortestDelta(from, to){
-      let delta = normalizeAngle(to) - normalizeAngle(from);
-      if (delta > Math.PI) delta -= Math.PI * 2;
-      if (delta < -Math.PI) delta += Math.PI * 2;
-      return delta;
     }
 
     function easeOutQuint(t){
@@ -855,15 +824,6 @@
 
     function getArc(){
       return (Math.PI * 2) / slices.length;
-    }
-
-    function getRelativeBallAngle(){
-      return normalizeAngle(ballAngleWorld - wheelRotation);
-    }
-
-    function getWinningIndexFromBall(){
-      const arc = getArc();
-      return Math.floor(getRelativeBallAngle() / arc) % slices.length;
     }
 
     function getCountsByLabel(){
@@ -925,11 +885,10 @@
     function resetGame(){
       if (!confirm('Reset the entire game, points, and chips?')) return;
       players = [];
-      settledSliceIndex = null;
       highlightIndex = null;
       highlightStrength = 0;
       resultMain.textContent = 'Waiting for spin…';
-      resultSub.textContent = 'The ball spins opposite the wheel, the wheel stops first, then the ball slows, hops, and settles onto the winning slice.';
+      resultSub.textContent = 'The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, and the ball slows, chatters, and settles one time only.';
       renderPlayers();
       renderLeaderboard();
       renderSliceTable();
@@ -957,7 +916,8 @@
 
     function scoreWinner(index){
       const slice = slices[index];
-      settledSliceIndex = index;
+      const multiplier = rarityMultipliers[slice.rarity] || 1;
+
       highlightIndex = index;
       highlightStrength = 1;
       playWin();
@@ -965,28 +925,31 @@
       const bettingPlayers = players.filter(p => p.currentBet > 0);
 
       if (bettingPlayers.length === 0) {
-        resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)}`;
+        resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
         resultSub.textContent = `No bets were placed. Exercise still stands: ${slice.label}.`;
       } else {
+        const awardedParts = [];
+
         bettingPlayers.forEach(player => {
           const chip = player.chips.find(c => c.selected && !c.spent);
           if (chip) {
+            const earned = chip.value * multiplier;
             chip.spent = true;
             chip.selected = false;
-            player.points += chip.value;
-            player.lastBet = chip.value;
+            player.points += earned;
+            player.lastBet = earned;
             player.currentBet = 0;
+            awardedParts.push(`${player.name} +${earned}`);
           }
         });
 
-        const awarded = bettingPlayers.map(p => `${p.name} +${p.lastBet}`).join(' • ');
-        resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)}`;
-        resultSub.textContent = `Winning slice flashed and scored. ${awarded}. Exercise: ${slice.label}.`;
+        resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
+        resultSub.textContent = `Multiplier applied. ${awardedParts.join(' • ')}. Exercise: ${slice.label}.`;
       }
 
       renderPlayers();
       renderLeaderboard();
-      setStatus(`Winner: ${slice.label}. Bets scored.`);
+      setStatus(`Winner: ${slice.label} (x${multiplier}). Bets scored.`);
     }
 
     // =========================
@@ -1046,7 +1009,7 @@
         tr.innerHTML = `
           <td><strong>${escapeHtml(player.name)}</strong></td>
           <td>${player.points}</td>
-          <td>${player.currentBet > 0 ? player.currentBet : (player.lastBet > 0 ? player.lastBet : '—')}</td>
+          <td>${player.lastBet > 0 ? player.lastBet : '—'}</td>
         `;
         leaderboardBody.appendChild(tr);
       });
@@ -1078,19 +1041,16 @@
       const bx = cx + Math.cos(ballAngleWorld) * ballTrackRadius;
       const by = cy + Math.sin(ballAngleWorld) * ballTrackRadius;
 
-      // shadow
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,.45)';
       ctx.shadowBlur = 18;
       ctx.shadowOffsetY = 8;
 
-      // outer gold ring
       ctx.beginPath();
       ctx.arc(bx, by, 34, 0, Math.PI * 2);
       ctx.fillStyle = css('--gold');
       ctx.fill();
 
-      // inner ball
       const grad = ctx.createRadialGradient(bx - 10, by - 12, 4, bx, by, 28);
       grad.addColorStop(0, '#ffffff');
       grad.addColorStop(.55, '#f0f3f8');
@@ -1105,7 +1065,6 @@
       ctx.strokeStyle = 'rgba(17,17,17,.14)';
       ctx.stroke();
 
-      // F3 text
       ctx.fillStyle = '#111';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -1127,7 +1086,6 @@
 
       ctx.clearRect(0, 0, w, h);
 
-      // halo
       const halo = ctx.createRadialGradient(cx, cy, radius * 0.2, cx, cy, radius * 1.35);
       halo.addColorStop(0, 'rgba(255,255,255,0)');
       halo.addColorStop(0.82, 'rgba(255,255,255,0.03)');
@@ -1137,7 +1095,6 @@
       ctx.arc(cx, cy, radius * 1.22, 0, Math.PI * 2);
       ctx.fill();
 
-      // outer track
       ctx.beginPath();
       ctx.arc(cx, cy, outerTrackRadius, 0, Math.PI * 2);
       ctx.lineWidth = 38;
@@ -1150,7 +1107,6 @@
       ctx.strokeStyle = 'rgba(255,255,255,.08)';
       ctx.stroke();
 
-      // wheel slices
       for (let i = 0; i < slices.length; i++) {
         const slice = slices[i];
         const start = wheelRotation + i * arc;
@@ -1202,7 +1158,6 @@
         ctx.restore();
       }
 
-      // center hub
       ctx.save();
       ctx.translate(cx, cy);
 
@@ -1247,14 +1202,12 @@
 
       ctx.restore();
 
-      // outer border
       ctx.beginPath();
       ctx.arc(cx, cy, radius + 2, 0, Math.PI * 2);
       ctx.lineWidth = 12;
       ctx.strokeStyle = 'rgba(255,255,255,.08)';
       ctx.stroke();
 
-      // ball
       drawBall(cx, cy, outerTrackRadius);
     }
 
@@ -1299,118 +1252,103 @@
       setButtonsDisabled(true);
       highlightIndex = null;
       highlightStrength = 0;
-      settledSliceIndex = null;
+
       resultMain.textContent = 'Spinning…';
-      resultSub.textContent = 'Wheel is spinning one way. Ball is spinning the opposite way and will settle after the wheel stops.';
-      setStatus('Spinning… wheel and ball are moving in opposite directions.');
+      resultSub.textContent = 'Wheel spins one way. Ball runs the opposite way, then slows, rattles, and settles.';
+      setStatus('Spinning…');
 
       const myToken = ++spinToken;
       const arc = getArc();
-
-      // choose winner
       const winningIndex = Math.floor(Math.random() * slices.length);
 
-      // starting state
       const startWheel = wheelRotation;
-      const startBallWorld = ballAngleWorld;
+      const startBall = ballAngleWorld;
 
-      // target wheel stop
       const wheelTurns = 4 + Math.random() * 2;
       const wheelStopTarget = startWheel + wheelTurns * Math.PI * 2;
 
-      // target ball relative to wheel so that winning slice is under the ball
       const targetRelativeCenter = winningIndex * arc + arc / 2;
       const finalBallWorld = wheelStopTarget + targetRelativeCenter;
 
-      // dramatic timing
-      const wheelDuration = 3600 + Math.random() * 600;
-      const ballDuration = wheelDuration + 2700 + Math.random() * 900;
+      let ballTravelTarget = startBall - (10 + Math.random() * 3) * Math.PI * 2;
+      while (ballTravelTarget < finalBallWorld + arc * 1.2) {
+        ballTravelTarget += Math.PI * 2;
+      }
+
+      const wheelDuration = 3400 + Math.random() * 500;
+      const ballDuration = wheelDuration + 2600 + Math.random() * 700;
       const totalDuration = ballDuration;
-
-      // ball path: opposite direction big travel, then settle to target
-      let preliminaryBallTarget = startBallWorld - (9 + Math.random() * 4) * Math.PI * 2;
-      preliminaryBallTarget += shortestDelta(preliminaryBallTarget, finalBallWorld);
-
-      startWheelNoise();
-
-      let lastBallTickBucket = null;
-      let lastWheelTickBucket = null;
-      let hopOnePlayed = false;
-      let hopTwoPlayed = false;
-      let settlePlayed = false;
-
       const startTime = performance.now();
+
+      let lastWheelBucket = null;
+      let lastBallBucket = null;
+      let hop1 = false;
+      let hop2 = false;
+      let settleDone = false;
+
+      startWheelRattle();
 
       function frame(now){
         if (myToken !== spinToken) return;
 
         const elapsed = now - startTime;
-        const tTotal = Math.min(elapsed / totalDuration, 1);
         const tWheel = Math.min(elapsed / wheelDuration, 1);
+        const tBall = Math.min(elapsed / ballDuration, 1);
 
-        // wheel slows and stops first
         wheelRotation = startWheel + (wheelStopTarget - startWheel) * easeOutQuint(tWheel);
 
-        // ball phase 1: fast opposite-direction orbit while wheel still active
-        const phase1 = 0.78;
-        if (tTotal < phase1) {
-          const p = tTotal / phase1;
-          ballAngleWorld = startBallWorld + (preliminaryBallTarget - startBallWorld) * easeOutCubic(p);
-        } else {
-          // phase 2: slower dramatic settle and chatter
-          const p = (tTotal - phase1) / (1 - phase1);
-          const settleBase = preliminaryBallTarget + (finalBallWorld - preliminaryBallTarget) * easeOutCubic(p);
+        let ballBase = startBall + (ballTravelTarget - startBall) * easeOutCubic(tBall);
 
-          // chatter / hop near end
-          let chatter = 0;
-          if (p > 0.45) {
-            const local = (p - 0.45) / 0.55;
-            chatter = Math.sin(local * Math.PI * 7) * arc * 0.12 * (1 - local);
-          }
-          ballAngleWorld = settleBase + chatter;
+        let chatter = 0;
+        if (tBall > 0.82 && tBall < 0.98) {
+          const local = (tBall - 0.82) / 0.16;
+          chatter = Math.sin(local * Math.PI * 6) * arc * 0.035 * (1 - local);
         }
 
-        // sounds
-        const wheelSpeedNorm = Math.max(0, 1 - tWheel);
-        updateWheelNoise(wheelSpeedNorm);
+        ballAngleWorld = ballBase + chatter;
 
-        // wheel ticks while fast
-        const wheelBucket = Math.floor(normalizeAngle(wheelRotation) / (arc / 2));
-        if (wheelBucket !== lastWheelTickBucket && tWheel < 0.95) {
-          lastWheelTickBucket = wheelBucket;
-          playTick(0.14 + wheelSpeedNorm * 0.35);
+        if (tBall >= 0.999) {
+          ballAngleWorld = finalBallWorld;
         }
 
-        // ball roll ticks
-        const ballBucket = Math.floor(normalizeAngle(ballAngleWorld) / (arc / 3));
-        if (ballBucket !== lastBallTickBucket) {
-          lastBallTickBucket = ballBucket;
-          playBallRoll(0.55 + (1 - tTotal) * 0.25);
+        const wheelBucket = Math.floor(wheelRotation / (arc / 2));
+        if (wheelBucket !== lastWheelBucket && tWheel < 0.96) {
+          lastWheelBucket = wheelBucket;
+          playClick(0.4 + (1 - tWheel) * 0.2);
+          playMechanicalWhirr(1 - tWheel);
         }
 
-        if (!hopOnePlayed && tTotal > 0.84) {
-          hopOnePlayed = true;
+        const ballBucket = Math.floor(ballAngleWorld / (arc / 3));
+        if (ballBucket !== lastBallBucket && tBall < 0.995) {
+          lastBallBucket = ballBucket;
+          playBallClack(0.8 + (1 - tBall) * 0.25);
+        }
+
+        if (!hop1 && tBall > 0.88) {
+          hop1 = true;
           playHop();
         }
-        if (!hopTwoPlayed && tTotal > 0.92) {
-          hopTwoPlayed = true;
+
+        if (!hop2 && tBall > 0.94) {
+          hop2 = true;
           playHop();
         }
-        if (!settlePlayed && tTotal > 0.985) {
-          settlePlayed = true;
+
+        if (!settleDone && tBall > 0.992) {
+          settleDone = true;
           playSettle();
+          stopWheelRattle();
         }
 
         drawWheel();
 
-        if (tTotal < 1) {
+        if (elapsed < totalDuration) {
           requestAnimationFrame(frame);
         } else {
-          stopWheelNoise();
+          stopWheelRattle();
           isSpinning = false;
           setButtonsDisabled(false);
 
-          // lock exact final angles
           wheelRotation = wheelStopTarget;
           ballAngleWorld = finalBallWorld;
 
