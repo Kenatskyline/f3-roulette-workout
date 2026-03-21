@@ -222,8 +222,7 @@
       text-transform:uppercase;
     }
 
-    .field input,
-    .field select{
+    .field input{
       width:100%;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.08);
@@ -234,8 +233,7 @@
       outline:none;
     }
 
-    .field input:focus,
-    .field select:focus{
+    .field input:focus{
       border-color:rgba(244,197,66,.55);
       box-shadow:0 0 0 3px rgba(244,197,66,.12);
     }
@@ -254,6 +252,11 @@
       padding:12px;
       display:grid;
       gap:10px;
+    }
+
+    .player.active-bettor{
+      border-color:rgba(244,197,66,.45);
+      box-shadow:0 0 0 2px rgba(244,197,66,.08) inset;
     }
 
     .player-top{
@@ -300,6 +303,11 @@
     .chip.spent{
       opacity:.3;
       text-decoration:line-through;
+      pointer-events:none;
+    }
+
+    .chip.locked{
+      opacity:.35;
       pointer-events:none;
     }
 
@@ -463,15 +471,14 @@
             <button class="secondary" id="addPlayerBtn">Add Player</button>
 
             <div class="small">
-              Each player gets two chips each of 5, 10, 15, 20, and 25. Every player bets
-              <strong>independently</strong>: choose one chip and one slice. Only players whose chosen
-              slice matches the ball’s final resting spot score points.
+              One player bets at a time. Pick one chip for one player, spin the wheel, and that player
+              earns <strong>bet × rarity multiplier</strong> based on where the ball settles.
             </div>
 
             <div class="players" id="playersList"></div>
 
             <div class="players-actions">
-              <button class="secondary" id="clearBetsBtn">Clear Bets</button>
+              <button class="secondary" id="clearBetsBtn">Clear Current Bet</button>
               <button class="danger" id="resetGameBtn">Reset Game</button>
             </div>
           </div>
@@ -503,16 +510,16 @@
         <div class="title">
           <div class="title-main">
             <h1>F3 Roulette Workout</h1>
-            <div class="subtitle">Da Grizz edition — the ball itself is the final landing marker, with independent betting, mechanical clicks, opposite spin, and no teleport snap.</div>
+            <div class="subtitle">Da Grizz edition — one bettor at a time, the ball is the final marker, opposite spin, mechanical clicks, and no teleport snap.</div>
             <div class="top-pills">
               <span class="pill">17 slices</span>
-              <span class="pill">Independent bets</span>
+              <span class="pill">Single bettor only</span>
               <span class="pill">Ball decides winner</span>
               <span class="pill">Opposite spin</span>
               <span class="pill">Mechanical sound</span>
             </div>
           </div>
-          <div class="badge">House Rules: Ball Must Settle</div>
+          <div class="badge">House Rules: One Bet Per Spin</div>
         </div>
 
         <div class="wheel-shell">
@@ -520,7 +527,7 @@
         </div>
 
         <div class="spin-bar">
-          <div class="status" id="statusText">Add players, choose one chip and one slice for each player, then spin the wheel.</div>
+          <div class="status" id="statusText">Add players, select one chip for one player, then spin the wheel.</div>
           <button class="secondary" id="shuffleBtn">Shuffle Wheel</button>
           <button class="primary" id="spinBtn">Spin Wheel</button>
         </div>
@@ -536,7 +543,7 @@
           <div class="result-box">
             <div class="result-label">Latest Landing</div>
             <div class="result-main" id="resultMain">Waiting for spin…</div>
-            <div class="result-sub" id="resultSub">Winner is the slice where the ball finally settles. The wheel stops first, then the ball slows and finishes on the workout that scores.</div>
+            <div class="result-sub" id="resultSub">Winner is the slice where the ball finally settles. The selected player scores their chip amount multiplied by that slice rarity.</div>
           </div>
         </div>
       </section>
@@ -572,7 +579,7 @@
               <tr>
                 <th>Player</th>
                 <th>Points</th>
-                <th>Last Result</th>
+                <th>Last Win</th>
               </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
@@ -640,6 +647,7 @@
     let highlightIndex = null;
     let highlightStrength = 0;
     let spinToken = 0;
+    let activeBetPlayerId = null;
 
     const centerLogo = new Image();
     centerLogo.src = 'f3-logo.PNG';
@@ -823,14 +831,16 @@
       return Math.floor(relative / arc) % slices.length;
     }
 
+    function getActiveBetPlayer(){
+      return players.find(player => player.id === activeBetPlayerId) || null;
+    }
+
     function canSpin(){
       if (isSpinning) return false;
       if (players.length === 0) return false;
 
-      const activeBettors = players.filter(player => player.currentBet > 0 || player.currentPick !== null);
-      if (activeBettors.length === 0) return true;
-
-      return activeBettors.every(player => player.currentBet > 0 && player.currentPick !== null);
+      const activePlayer = getActiveBetPlayer();
+      return !!(activePlayer && activePlayer.currentBet > 0);
     }
 
     function createPlayer(name, startingPoints = 0){
@@ -845,9 +855,7 @@
           selected: false
         })),
         currentBet: 0,
-        currentPick: null,
         lastBet: 0,
-        lastPick: null,
         lastResultText: '—'
       };
     }
@@ -861,30 +869,31 @@
       renderPlayers();
       renderLeaderboard();
       updateSpinButtonState();
-      setStatus('Player added. Choose a chip and a slice for that player.');
+      setStatus('Player added. Choose one chip for one player.');
     }
 
-    function clearAllSelections(){
+    function clearCurrentBet(){
       players.forEach(player => {
         player.currentBet = 0;
-        player.currentPick = null;
         player.chips.forEach(chip => chip.selected = false);
       });
+      activeBetPlayerId = null;
       renderPlayers();
       renderLeaderboard();
       updateSpinButtonState();
-      setStatus('All current bets and picks cleared.');
+      setStatus('Current bet cleared.');
     }
 
     function resetGame(){
-      if (!confirm('Reset the entire game, points, chips, and picks?')) return;
+      if (!confirm('Reset the entire game, points, chips, and current bet?')) return;
       players = [];
       highlightIndex = null;
       highlightStrength = 0;
       wheelRotation = 0;
       ballAngleWorld = -Math.PI / 2;
+      activeBetPlayerId = null;
       resultMain.textContent = 'Waiting for spin…';
-      resultSub.textContent = 'Winner is the slice where the ball finally settles. The wheel stops first, then the ball slows and finishes on the workout that scores.';
+      resultSub.textContent = 'Winner is the slice where the ball finally settles. The selected player scores their chip amount multiplied by that slice rarity.';
       renderPlayers();
       renderLeaderboard();
       renderSliceTable();
@@ -895,11 +904,20 @@
 
     function toggleChip(playerId, chipId){
       if (isSpinning) return;
+
       const player = players.find(p => p.id === playerId);
       if (!player) return;
 
       const chip = player.chips.find(c => c.id === chipId);
       if (!chip || chip.spent) return;
+
+      // one player only
+      players.forEach(p => {
+        if (p.id !== playerId) {
+          p.currentBet = 0;
+          p.chips.forEach(c => c.selected = false);
+        }
+      });
 
       player.chips.forEach(c => {
         if (!c.spent) c.selected = false;
@@ -907,29 +925,12 @@
 
       chip.selected = true;
       player.currentBet = chip.value;
+      activeBetPlayerId = player.id;
 
       renderPlayers();
       renderLeaderboard();
       updateSpinButtonState();
-      setStatus(`${player.name} locked ${chip.value} points.`);
-    }
-
-    function setPlayerPick(playerId, pickIndex){
-      if (isSpinning) return;
-      const player = players.find(p => p.id === playerId);
-      if (!player) return;
-
-      player.currentPick = pickIndex === '' ? null : Number(pickIndex);
-
-      renderPlayers();
-      renderLeaderboard();
-      updateSpinButtonState();
-
-      if (player.currentPick === null) {
-        setStatus(`${player.name} cleared their slice pick.`);
-      } else {
-        setStatus(`${player.name} picked ${slices[player.currentPick].label}.`);
-      }
+      setStatus(`${player.name} is the active bettor with ${chip.value} points.`);
     }
 
     function scoreWinner(index){
@@ -940,55 +941,38 @@
       highlightStrength = 1;
       playWin();
 
-      const activePlayers = players.filter(player => player.currentBet > 0 && player.currentPick !== null);
-      const winners = [];
-      const misses = [];
+      const activePlayer = getActiveBetPlayer();
 
-      if (activePlayers.length === 0) {
+      if (!activePlayer || activePlayer.currentBet <= 0) {
         resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
-        resultSub.textContent = `No valid player bets were placed. Exercise still stands: ${slice.label}.`;
+        resultSub.textContent = `No active bet was placed. Exercise still stands: ${slice.label}.`;
       } else {
-        activePlayers.forEach(player => {
-          const chip = player.chips.find(c => c.selected && !c.spent);
-          if (!chip) return;
+        const chip = activePlayer.chips.find(c => c.selected && !c.spent);
 
-          const pickedLabel = slices[player.currentPick].label;
-          player.lastPick = player.currentPick;
+        resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
 
+        if (!chip) {
+          resultSub.textContent = `No valid chip was found for ${activePlayer.name}. Exercise: ${slice.label}.`;
+        } else {
+          const earned = chip.value * multiplier;
           chip.spent = true;
           chip.selected = false;
 
-          if (player.currentPick === index) {
-            const earned = chip.value * multiplier;
-            player.points += earned;
-            player.lastBet = earned;
-            player.lastResultText = `Hit ${pickedLabel} +${earned}`;
-            winners.push(`${player.name} +${earned}`);
-          } else {
-            player.lastBet = 0;
-            player.lastResultText = `Missed ${pickedLabel}`;
-            misses.push(`${player.name} missed`);
-          }
+          activePlayer.points += earned;
+          activePlayer.lastBet = earned;
+          activePlayer.lastResultText = `${slice.label} +${earned}`;
+          activePlayer.currentBet = 0;
 
-          player.currentBet = 0;
-          player.currentPick = null;
-        });
-
-        resultMain.textContent = `${slice.label} • ${rarityLabel(slice.rarity)} • x${multiplier}`;
-
-        if (winners.length === 0) {
-          resultSub.textContent = `No one hit it. Winning slice: ${slice.label}. ${misses.join(' • ')}`;
-        } else if (misses.length === 0) {
-          resultSub.textContent = `Winning slice: ${slice.label}. ${winners.join(' • ')}`;
-        } else {
-          resultSub.textContent = `Winning slice: ${slice.label}. ${winners.join(' • ')} • ${misses.join(' • ')}`;
+          resultSub.textContent = `${activePlayer.name} bet ${chip.value} and landed on ${slice.label}. Payout: +${earned}.`;
         }
       }
+
+      activeBetPlayerId = null;
 
       renderPlayers();
       renderLeaderboard();
       updateSpinButtonState();
-      setStatus(`Winner: ${slice.label} (x${multiplier}). Independent bets scored.`);
+      setStatus(`Winner: ${slice.label} (x${multiplier}).`);
     }
 
     function renderPlayers(){
@@ -1000,36 +984,36 @@
       }
 
       players.forEach(player => {
+        const isActive = activeBetPlayerId === player.id;
+
         const wrapper = document.createElement('div');
-        wrapper.className = 'player';
+        wrapper.className = `player${isActive ? ' active-bettor' : ''}`;
 
         const chipsHtml = player.chips.map(chip => {
-          const cls = ['chip', chip.selected ? 'selected' : '', chip.spent ? 'spent' : ''].filter(Boolean).join(' ');
+          const isLocked = activeBetPlayerId && activeBetPlayerId !== player.id;
+          const cls = [
+            'chip',
+            chip.selected ? 'selected' : '',
+            chip.spent ? 'spent' : '',
+            isLocked && !chip.spent ? 'locked' : ''
+          ].filter(Boolean).join(' ');
+
           return `
-            <button class="${cls}" data-player-id="${player.id}" data-chip-id="${chip.id}" ${chip.spent ? 'disabled' : ''}>
+            <button
+              class="${cls}"
+              data-player-id="${player.id}"
+              data-chip-id="${chip.id}"
+              ${(chip.spent || (isLocked && !chip.selected)) ? 'disabled' : ''}
+            >
               ${chip.value}
             </button>
           `;
         }).join('');
 
-        const optionsHtml = slices.map((slice, index) => `
-          <option value="${index}" ${player.currentPick === index ? 'selected' : ''}>
-            ${escapeHtml(slice.label)} (${rarityLabel(slice.rarity)})
-          </option>
-        `).join('');
-
         wrapper.innerHTML = `
           <div class="player-top">
-            <div class="player-name">${escapeHtml(player.name)}</div>
+            <div class="player-name">${escapeHtml(player.name)}${isActive ? ' • Active Bet' : ''}</div>
             <div class="player-points">${player.points} pts</div>
-          </div>
-
-          <div class="field">
-            <label>Pick Slice</label>
-            <select class="player-pick" data-player-id="${player.id}">
-              <option value="">Choose a slice</option>
-              ${optionsHtml}
-            </select>
           </div>
 
           <div class="chip-bank">${chipsHtml}</div>
@@ -1038,11 +1022,6 @@
             <span>Current Bet</span>
             <span class="bet-amt">${player.currentBet > 0 ? player.currentBet : '—'}</span>
           </div>
-
-          <div class="bet-line">
-            <span>Current Pick</span>
-            <span class="bet-amt">${player.currentPick !== null ? escapeHtml(slices[player.currentPick].label) : '—'}</span>
-          </div>
         `;
 
         playersList.appendChild(wrapper);
@@ -1050,12 +1029,6 @@
 
       playersList.querySelectorAll('.chip').forEach(btn => {
         btn.addEventListener('click', () => toggleChip(btn.dataset.playerId, btn.dataset.chipId));
-      });
-
-      playersList.querySelectorAll('.player-pick').forEach(select => {
-        select.addEventListener('change', () => {
-          setPlayerPick(select.dataset.playerId, select.value);
-        });
       });
     }
 
@@ -1427,7 +1400,6 @@
     function shuffleWheel(){
       if (isSpinning) return;
       shuffleArray(slices);
-      renderPlayers();
       renderSliceTable();
       drawWheel();
       updateSpinButtonState();
@@ -1435,7 +1407,7 @@
     }
 
     addPlayerBtn.addEventListener('click', addPlayer);
-    clearBetsBtn.addEventListener('click', clearAllSelections);
+    clearBetsBtn.addEventListener('click', clearCurrentBet);
     resetGameBtn.addEventListener('click', resetGame);
     shuffleBtn.addEventListener('click', shuffleWheel);
     spinBtn.addEventListener('click', spinWheel);
