@@ -416,15 +416,6 @@
 
     .muted{color:var(--muted)}
 
-    .pointer-line{
-      display:flex;
-      justify-content:center;
-      margin-top:8px;
-      color:var(--gold);
-      font-weight:900;
-      font-size:.9rem;
-    }
-
     @media (max-width:1320px){
       .app{grid-template-columns:1fr}
       .left-col,.right-col{order:2}
@@ -472,9 +463,9 @@
             <button class="secondary" id="addPlayerBtn">Add Player</button>
 
             <div class="small">
-              Each player gets two chips each of 5, 10, 15, 20, and 25. Every player now bets
-              <strong>independently</strong>: choose one chip and one slice. Only players who picked the
-              winning slice score.
+              Each player gets two chips each of 5, 10, 15, 20, and 25. Every player bets
+              <strong>independently</strong>: choose one chip and one slice. Only players whose chosen
+              slice matches the ball’s final resting spot score points.
             </div>
 
             <div class="players" id="playersList"></div>
@@ -512,23 +503,21 @@
         <div class="title">
           <div class="title-main">
             <h1>F3 Roulette Workout</h1>
-            <div class="subtitle">Da Grizz edition — custom center logo, opposite-direction ball spin, independent betting, mechanical clicks, and no end-stop teleport.</div>
+            <div class="subtitle">Da Grizz edition — the ball itself is the final landing marker, with independent betting, mechanical clicks, opposite spin, and no teleport snap.</div>
             <div class="top-pills">
               <span class="pill">17 slices</span>
               <span class="pill">Independent bets</span>
+              <span class="pill">Ball decides winner</span>
               <span class="pill">Opposite spin</span>
               <span class="pill">Mechanical sound</span>
-              <span class="pill">Custom F3 center</span>
             </div>
           </div>
-          <div class="badge">House Rules: Pick Your Slice</div>
+          <div class="badge">House Rules: Ball Must Settle</div>
         </div>
 
         <div class="wheel-shell">
           <canvas id="wheelCanvas" width="1400" height="1400" aria-label="Roulette wheel"></canvas>
         </div>
-
-        <div class="pointer-line">▲ Winning pointer</div>
 
         <div class="spin-bar">
           <div class="status" id="statusText">Add players, choose one chip and one slice for each player, then spin the wheel.</div>
@@ -547,7 +536,7 @@
           <div class="result-box">
             <div class="result-label">Latest Landing</div>
             <div class="result-main" id="resultMain">Waiting for spin…</div>
-            <div class="result-sub" id="resultSub">The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows and settles once without snapping to a new angle.</div>
+            <div class="result-sub" id="resultSub">Winner is the slice where the ball finally settles. The wheel stops first, then the ball slows and finishes on the workout that scores.</div>
           </div>
         </div>
       </section>
@@ -568,7 +557,7 @@
             <tbody id="sliceTableBody"></tbody>
           </table>
           <div class="footer-note">
-            Winner is read at the fixed top pointer. Rarity sets the point multiplier.
+            Winner is the slice where the ball finally settles. Rarity sets the point multiplier.
           </div>
         </div>
       </section>
@@ -594,9 +583,6 @@
   </div>
 
   <script>
-    // =========================
-    // CONFIG / DATA
-    // =========================
     function css(name){
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
@@ -659,9 +645,6 @@
     centerLogo.src = 'f3-logo.PNG';
     centerLogo.onload = () => drawWheel();
 
-    // =========================
-    // DOM
-    // =========================
     const canvas = document.getElementById('wheelCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -682,9 +665,6 @@
     const resultMain = document.getElementById('resultMain');
     const resultSub = document.getElementById('resultSub');
 
-    // =========================
-    // AUDIO
-    // =========================
     let audioCtx = null;
     let wheelRattleInterval = null;
 
@@ -766,9 +746,6 @@
       playOsc(783.99, 'sine', 0.18, 0.05, 0.1);
     }
 
-    // =========================
-    // HELPERS
-    // =========================
     function shuffleArray(arr){
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -840,10 +817,9 @@
       return ((angle % full) + full) % full;
     }
 
-    function getWinningIndexFromPointer(){
+    function getWinningIndexFromBall(){
       const arc = getArc();
-      const pointerAngle = -Math.PI / 2;
-      const relative = normalizeAngle(pointerAngle - wheelRotation);
+      const relative = normalizeAngle(ballAngleWorld - wheelRotation);
       return Math.floor(relative / arc) % slices.length;
     }
 
@@ -857,9 +833,6 @@
       return activeBettors.every(player => player.currentBet > 0 && player.currentPick !== null);
     }
 
-    // =========================
-    // PLAYERS
-    // =========================
     function createPlayer(name, startingPoints = 0){
       return {
         id: crypto.randomUUID(),
@@ -911,7 +884,7 @@
       wheelRotation = 0;
       ballAngleWorld = -Math.PI / 2;
       resultMain.textContent = 'Waiting for spin…';
-      resultSub.textContent = 'The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows and settles once without snapping to a new angle.';
+      resultSub.textContent = 'Winner is the slice where the ball finally settles. The wheel stops first, then the ball slows and finishes on the workout that scores.';
       renderPlayers();
       renderLeaderboard();
       renderSliceTable();
@@ -959,9 +932,6 @@
       }
     }
 
-    // =========================
-    // SCORING
-    // =========================
     function scoreWinner(index){
       const slice = slices[index];
       const multiplier = rarityMultipliers[slice.rarity] || 1;
@@ -1021,9 +991,6 @@
       setStatus(`Winner: ${slice.label} (x${multiplier}). Independent bets scored.`);
     }
 
-    // =========================
-    // RENDER
-    // =========================
     function renderPlayers(){
       playersList.innerHTML = '';
 
@@ -1172,25 +1139,6 @@
       ctx.restore();
     }
 
-    function drawPointer(cx, cy, outerTrackRadius){
-      const tipY = cy - outerTrackRadius - 20;
-      ctx.save();
-
-      ctx.beginPath();
-      ctx.moveTo(cx, tipY);
-      ctx.lineTo(cx - 28, tipY - 48);
-      ctx.lineTo(cx + 28, tipY - 48);
-      ctx.closePath();
-      ctx.fillStyle = css('--gold');
-      ctx.fill();
-
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = 'rgba(17,17,17,.25)';
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
     function drawWheel(){
       const w = canvas.width;
       const h = canvas.height;
@@ -1325,16 +1273,12 @@
       ctx.stroke();
 
       drawBall(cx, cy, outerTrackRadius);
-      drawPointer(cx, cy, outerTrackRadius);
     }
 
     function updateSpinButtonState(){
       spinBtn.disabled = !canSpin();
     }
 
-    // =========================
-    // SPIN / PHYSICS
-    // =========================
     function flashWinnerThenScore(index){
       const myToken = ++spinToken;
       const flashes = 7;
@@ -1375,7 +1319,7 @@
       highlightStrength = 0;
 
       resultMain.textContent = 'Spinning…';
-      resultSub.textContent = 'Wheel spins one way. Ball runs the opposite way, then slows, rattles, and settles.';
+      resultSub.textContent = 'Wheel spins one way. Ball runs the opposite way, then slows, rattles, and settles on the final workout.';
       setStatus('Spinning…');
 
       const myToken = ++spinToken;
@@ -1384,14 +1328,13 @@
       const startWheel = wheelRotation;
       const startBall = ballAngleWorld;
 
-      // Wheel spins clockwise and stops first.
       const wheelTurns = 4 + Math.random() * 2;
       const wheelStopTarget = startWheel + wheelTurns * Math.PI * 2;
 
-      // Ball spins opposite direction and lands naturally without a final snap.
       const winningIndex = Math.floor(Math.random() * slices.length);
       const targetRelativeCenter = winningIndex * arc + arc / 2;
       const finalBallWorld = wheelStopTarget + targetRelativeCenter;
+
       const extraOppositeTurns = Math.floor(10 + Math.random() * 3);
       const ballTravelTarget = finalBallWorld - extraOppositeTurns * Math.PI * 2;
 
@@ -1468,14 +1411,12 @@
           setButtonsDisabled(false);
 
           wheelRotation = wheelStopTarget;
-          // Intentionally do NOT snap ballAngleWorld here.
-          // The ball already animated to its true final visible landing path.
 
-          const scoredIndex = getWinningIndexFromPointer();
+          const scoredIndex = getWinningIndexFromBall();
 
           drawWheel();
           updateSpinButtonState();
-          setStatus('Ball settled. Flashing winning slice…');
+          setStatus('Ball settled on final slice. Flashing winner…');
           flashWinnerThenScore(scoredIndex);
         }
       }
@@ -1493,9 +1434,6 @@
       setStatus('Wheel shuffled.');
     }
 
-    // =========================
-    // EVENTS / INIT
-    // =========================
     addPlayerBtn.addEventListener('click', addPlayer);
     clearBetsBtn.addEventListener('click', clearAllSelections);
     resetGameBtn.addEventListener('click', resetGame);
