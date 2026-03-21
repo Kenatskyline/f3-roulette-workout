@@ -124,23 +124,13 @@
       font-weight:700;
     }
 
-    .wheel-card{
-      padding:16px;
-    }
+    .wheel-card{ padding:16px; }
 
     .wheel-shell{
       position:relative;
       width:min(100%,900px);
       aspect-ratio:1/1;
       margin:6px auto 0;
-      display:grid;
-      place-items:center;
-    }
-
-    .wheel-wrap{
-      position:relative;
-      width:100%;
-      height:100%;
       display:grid;
       place-items:center;
     }
@@ -471,8 +461,7 @@
 
             <div class="small">
               Each player starts with <strong>double chips</strong>: two each of 5, 10, 15, 20, and 25.
-              No “No Points” button. One chip per player per round.
-              Rarer slices award bigger point multipliers.
+              One chip per player per round. Rarer slices award bigger multipliers.
             </div>
 
             <div class="players" id="playersList"></div>
@@ -510,7 +499,7 @@
         <div class="title">
           <div class="title-main">
             <h1>F3 Roulette Workout</h1>
-            <div class="subtitle">Da Grizz edition — custom center logo, opposite-direction ball spin, mechanical clicks, and no weird second settle.</div>
+            <div class="subtitle">Da Grizz edition — custom center logo, opposite-direction ball spin, mechanical clicks, and no teleport bug.</div>
             <div class="top-pills">
               <span class="pill">17 slices</span>
               <span class="pill">Opposite spin</span>
@@ -523,9 +512,7 @@
         </div>
 
         <div class="wheel-shell">
-          <div class="wheel-wrap">
-            <canvas id="wheelCanvas" width="1400" height="1400" aria-label="Roulette wheel"></canvas>
-          </div>
+          <canvas id="wheelCanvas" width="1400" height="1400" aria-label="Roulette wheel"></canvas>
         </div>
 
         <div class="spin-bar">
@@ -545,7 +532,7 @@
           <div class="result-box">
             <div class="result-label">Latest Landing</div>
             <div class="result-main" id="resultMain">Waiting for spin…</div>
-            <div class="result-sub" id="resultSub">The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, and the ball slows, chatters, and settles one time only.</div>
+            <div class="result-sub" id="resultSub">The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows, chatters, and settles once.</div>
           </div>
         </div>
       </section>
@@ -696,10 +683,8 @@
 
       osc.type = type;
       osc.frequency.value = freq;
-
       filter.type = 'lowpass';
       filter.frequency.value = 2200;
-
       gain.gain.value = 0.0001;
 
       osc.connect(filter);
@@ -774,13 +759,6 @@
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
-    }
-
-    function normalizeAngle(angle){
-      const full = Math.PI * 2;
-      let a = angle % full;
-      if (a < 0) a += full;
-      return a;
     }
 
     function easeOutQuint(t){
@@ -888,7 +866,7 @@
       highlightIndex = null;
       highlightStrength = 0;
       resultMain.textContent = 'Waiting for spin…';
-      resultSub.textContent = 'The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, and the ball slows, chatters, and settles one time only.';
+      resultSub.textContent = 'The wheel spins one way. The F3 ball spins the opposite way, the wheel stops first, then the ball slows, chatters, and settles once.';
       renderPlayers();
       renderLeaderboard();
       renderSliceTable();
@@ -1188,7 +1166,6 @@
         ctx.arc(0, 0, logoRadius, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-
         const size = logoRadius * 2;
         ctx.drawImage(centerLogo, -size / 2, -size / 2, size, size);
         ctx.restore();
@@ -1264,16 +1241,17 @@
       const startWheel = wheelRotation;
       const startBall = ballAngleWorld;
 
+      // Wheel spins clockwise and stops first
       const wheelTurns = 4 + Math.random() * 2;
       const wheelStopTarget = startWheel + wheelTurns * Math.PI * 2;
 
+      // Winning slice center relative to stopped wheel
       const targetRelativeCenter = winningIndex * arc + arc / 2;
       const finalBallWorld = wheelStopTarget + targetRelativeCenter;
 
-      let ballTravelTarget = startBall - (10 + Math.random() * 3) * Math.PI * 2;
-      while (ballTravelTarget < finalBallWorld + arc * 1.2) {
-        ballTravelTarget += Math.PI * 2;
-      }
+      // FIXED: animate toward a target that resolves to the exact final angle path
+      const extraOppositeTurns = 10 + Math.random() * 3;
+      const ballTravelTarget = finalBallWorld - extraOppositeTurns * Math.PI * 2;
 
       const wheelDuration = 3400 + Math.random() * 500;
       const ballDuration = wheelDuration + 2600 + Math.random() * 700;
@@ -1297,17 +1275,17 @@
 
         wheelRotation = startWheel + (wheelStopTarget - startWheel) * easeOutQuint(tWheel);
 
-        let ballBase = startBall + (ballTravelTarget - startBall) * easeOutCubic(tBall);
-
         let chatter = 0;
         if (tBall > 0.82 && tBall < 0.98) {
           const local = (tBall - 0.82) / 0.16;
           chatter = Math.sin(local * Math.PI * 6) * arc * 0.035 * (1 - local);
         }
 
+        // FIXED: base animation and final target are on the same path
+        const ballBase = startBall + (ballTravelTarget - startBall) * easeOutCubic(tBall);
         ballAngleWorld = ballBase + chatter;
 
-        if (tBall >= 0.999) {
+        if (tBall >= 1) {
           ballAngleWorld = finalBallWorld;
         }
 
