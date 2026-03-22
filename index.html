@@ -327,7 +327,7 @@
 
     .players-actions{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:1fr 1fr 1fr;
       gap:10px;
       margin-top:12px;
     }
@@ -479,6 +479,7 @@
 
             <div class="players-actions">
               <button class="secondary" id="clearBetsBtn">Clear Current Bet</button>
+              <button class="secondary" id="resetTokensBtn">Reset Tokens</button>
               <button class="danger" id="resetGameBtn">Reset Game</button>
             </div>
           </div>
@@ -495,7 +496,7 @@
             <div class="legend-item"><span class="swatch" style="background:var(--yellow)"></span><div><strong>Yellow</strong><br><span class="small">Uncommon • x2</span></div></div>
             <div class="legend-item"><span class="swatch" style="background:var(--orange)"></span><div><strong>Orange</strong><br><span class="small">Rare • x3</span></div></div>
             <div class="legend-item"><span class="swatch" style="background:var(--red)"></span><div><strong>Red</strong><br><span class="small">Hard • x4</span></div></div>
-            <div class="legend-item"><span class="swatch" style="background:#000"></span><div><strong>Black</strong><br><span class="small">Legendary • x5</span></div></div>
+            <div class="legend-item"><span class="swatch" style="background:#111111"></span><div><strong>Black</strong><br><span class="small">Legendary • x5</span></div></div>
           </div>
 
           <div class="footer-note">
@@ -517,6 +518,7 @@
               <span class="pill">Ball decides winner</span>
               <span class="pill">Opposite spin</span>
               <span class="pill">Mechanical sound</span>
+              <span class="pill">Token reset only</span>
             </div>
           </div>
           <div class="badge">House Rules: One Bet Per Spin</div>
@@ -660,6 +662,7 @@
     const shuffleBtn = document.getElementById('shuffleBtn');
     const addPlayerBtn = document.getElementById('addPlayerBtn');
     const clearBetsBtn = document.getElementById('clearBetsBtn');
+    const resetTokensBtn = document.getElementById('resetTokensBtn');
     const resetGameBtn = document.getElementById('resetGameBtn');
 
     const playersList = document.getElementById('playersList');
@@ -798,6 +801,7 @@
       shuffleBtn.disabled = state;
       addPlayerBtn.disabled = state;
       clearBetsBtn.disabled = state;
+      resetTokensBtn.disabled = state;
     }
 
     function getArc(){
@@ -838,7 +842,6 @@
     function canSpin(){
       if (isSpinning) return false;
       if (players.length === 0) return false;
-
       const activePlayer = getActiveBetPlayer();
       return !!(activePlayer && activePlayer.currentBet > 0);
     }
@@ -884,6 +887,27 @@
       setStatus('Current bet cleared.');
     }
 
+    function resetTokens(){
+      if (isSpinning) return;
+      if (players.length === 0) return;
+      if (!confirm('Reset all player tokens/chips but keep names and scores?')) return;
+
+      players.forEach(player => {
+        player.currentBet = 0;
+        player.chips.forEach(chip => {
+          chip.spent = false;
+          chip.selected = false;
+        });
+      });
+
+      activeBetPlayerId = null;
+
+      renderPlayers();
+      renderLeaderboard();
+      updateSpinButtonState();
+      setStatus('All player tokens have been reset. Names and scores were kept.');
+    }
+
     function resetGame(){
       if (!confirm('Reset the entire game, points, chips, and current bet?')) return;
       players = [];
@@ -911,7 +935,6 @@
       const chip = player.chips.find(c => c.id === chipId);
       if (!chip || chip.spent) return;
 
-      // one player only
       players.forEach(p => {
         if (p.id !== playerId) {
           p.currentBet = 0;
@@ -1408,6 +1431,7 @@
 
     addPlayerBtn.addEventListener('click', addPlayer);
     clearBetsBtn.addEventListener('click', clearCurrentBet);
+    resetTokensBtn.addEventListener('click', resetTokens);
     resetGameBtn.addEventListener('click', resetGame);
     shuffleBtn.addEventListener('click', shuffleWheel);
     spinBtn.addEventListener('click', spinWheel);
